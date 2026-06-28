@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Input, OnInit, inject } from '@angular/core';
 import { finalize } from 'rxjs';
 import { AvalonService } from '../../../core/services/avalon.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -10,7 +10,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { EquipmentGridComponent } from '../../../shared/components/equipment-grid/equipment-grid.component';
 import { SwapInventoryComponent } from '../../../shared/components/swap-inventory/swap-inventory.component';
 import { slotItemMap } from '../../../shared/utils/equipment.util';
@@ -25,7 +24,6 @@ import { slotItemMap } from '../../../shared/utils/equipment.util';
     MatIconModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatExpansionModule,
     EquipmentGridComponent,
     SwapInventoryComponent,
   ],
@@ -42,26 +40,13 @@ export class AvalonRoleRegistrationComponent implements OnInit {
 
   loading = true;
   actionSlotKey: string | null = null;
-  expandedPanelId: string | null = null;
+  selectedBuildSlot: AvalonRoleSlot | null = null;
   rolesOverview: AvalonRolesOverview | null = null;
   readonly slotItemMap = slotItemMap;
 
-  panelId(slotKey: string, type: 'build' | 'swaps'): string {
-    return `${slotKey}-${type}`;
-  }
-
-  isSlotPanelExpanded(slotKey: string): boolean {
-    return this.expandedPanelId?.startsWith(`${slotKey}-`) ?? false;
-  }
-
-  onPanelOpened(panelId: string): void {
-    this.expandedPanelId = panelId;
-  }
-
-  onPanelClosed(panelId: string): void {
-    if (this.expandedPanelId === panelId) {
-      this.expandedPanelId = null;
-    }
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeBuildModal();
   }
 
   ngOnInit(): void {
@@ -75,8 +60,23 @@ export class AvalonRoleRegistrationComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.rolesOverview = data;
+        if (this.selectedBuildSlot) {
+          this.selectedBuildSlot = data.roles.find((r) => r.slotKey === this.selectedBuildSlot!.slotKey) ?? null;
+        }
       },
     });
+  }
+
+  openBuildModal(slot: AvalonRoleSlot): void {
+    this.selectedBuildSlot = slot;
+  }
+
+  closeBuildModal(): void {
+    this.selectedBuildSlot = null;
+  }
+
+  hasBuildContent(slot: AvalonRoleSlot): boolean {
+    return this.getBuildSlots(slot).length > 0 || (slot.slotSwaps?.length ?? 0) > 0;
   }
 
   slotLabel(slot: AvalonRoleSlot): string {
