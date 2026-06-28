@@ -1,68 +1,84 @@
-<app-page-header title="Ping Ava" subtitle="Programa una avaloniana para el gremio"></app-page-header>
+<app-page-header
+  title="Ping Ava"
+  subtitle="Elige plantilla, fecha y hora — el gremio se inscribe por roles"
+></app-page-header>
 
-@if (canUseTemplates && templates.length) {
-  <mat-card class="form-card template-card">
-    <h3>Desde plantilla de ping</h3>
-    <p class="hint">Usa una plantilla configurada por el admin — crea la ava con roles predefinidos</p>
-    <div class="template-row">
-      <mat-form-field appearance="outline">
-        <mat-label>Plantilla</mat-label>
-        <mat-select [(value)]="selectedTemplateId">
+@if (loadingTemplates) {
+  <app-loading-spinner message="Cargando plantillas..." />
+} @else if (templates.length === 0) {
+  <app-empty-state
+    icon="event_note"
+    title="Sin plantillas de avaloniana"
+    description="Un admin debe crear plantillas con roles antes de publicar pings."
+    [actionLabel]="isAdmin ? 'Ir a Plantillas Ava' : ''"
+    (actionClick)="goToTemplates()"
+  />
+} @else {
+  <mat-card class="form-card">
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Plantilla de avaloniana</mat-label>
+        <mat-select formControlName="templateId">
           @for (t of templates; track t.id) {
             <mat-option [value]="t.id">{{ t.name }} — {{ t.zone }}</mat-option>
           }
         </mat-select>
+        @if (form.controls.templateId.touched && form.controls.templateId.hasError('required')) {
+          <mat-error>Debes elegir una plantilla</mat-error>
+        }
+        @if (form.controls.templateId.touched && form.controls.templateId.hasError('min')) {
+          <mat-error>Debes elegir una plantilla</mat-error>
+        }
       </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Fecha</mat-label>
-        <input matInput [matDatepicker]="tplPicker" [(ngModel)]="templateDate" [ngModelOptions]="{ standalone: true }" />
-        <mat-datepicker-toggle matIconSuffix [for]="tplPicker"></mat-datepicker-toggle>
-        <mat-datepicker #tplPicker></mat-datepicker>
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Hora</mat-label>
-        <input matInput type="time" [(ngModel)]="templateTime" [ngModelOptions]="{ standalone: true }" />
-      </mat-form-field>
-      <button mat-flat-button color="accent" (click)="createFromTemplate()" [disabled]="!selectedTemplateId || templateLoading">
-        @if (templateLoading) {
+
+      @if (selectedTemplate) {
+        <div class="template-preview">
+          <mat-icon>groups</mat-icon>
+          <div>
+            <strong>{{ selectedTemplate.name }}</strong>
+            <span>Zona: {{ selectedTemplate.zone }}</span>
+            @if (selectedTemplate.description) {
+              <p>{{ selectedTemplate.description }}</p>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="schedule-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="date" [min]="minDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Hora del ping</mat-label>
+          <input matInput type="time" formControlName="scheduledTime" />
+        </mat-form-field>
+      </div>
+
+      @if (scheduledDayLabel) {
+        <p class="day-preview">
+          <mat-icon>event</mat-icon>
+          {{ scheduledDayLabel }}
+        </p>
+      }
+
+      <ul class="rules-hint">
+        <li>Mínimo <strong>1 hora</strong> desde ahora</li>
+        <li>Si tú publicas otro ping, deben pasar <strong>2 horas</strong> desde tu último</li>
+        <li>Otro caller o admin puede publicar al mismo tiempo</li>
+      </ul>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="submitting || form.invalid">
+        @if (submitting) {
           <mat-spinner diameter="20" />
         } @else {
           <mat-icon>campaign</mat-icon>
+          Publicar ping
         }
-        Publicar ping
       </button>
-    </div>
+    </form>
   </mat-card>
-
-  <mat-divider class="section-divider">o crear manualmente</mat-divider>
 }
-
-<mat-card class="form-card">
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Fecha</mat-label>
-      <input matInput [matDatepicker]="picker" formControlName="date" />
-      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-datepicker #picker></mat-datepicker>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Hora del ping</mat-label>
-      <input matInput type="time" formControlName="scheduledTime" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Zona</mat-label>
-      <input matInput formControlName="zone" placeholder="Ej: Avalonian Roads" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Descripción</mat-label>
-      <textarea matInput rows="3" formControlName="description"></textarea>
-    </mat-form-field>
-
-    <button mat-flat-button color="primary" type="submit" [disabled]="loading">
-      @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Publicar ping }
-    </button>
-  </form>
-</mat-card>

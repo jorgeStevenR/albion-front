@@ -1,32 +1,86 @@
 .form-card {
-  max-width: 560px;
+  max-width: 640px;
   padding: 1.5rem;
-  margin-bottom: 1rem;
   background: var(--card-bg) !important;
   border: 1px solid var(--border-color);
 }
 
-.template-card h3 {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
+.full-width {
+  width: 100%;
+  margin-bottom: 0.5rem;
 }
 
-.hint {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin: 0 0 1rem;
-}
-
-.template-row {
-  display: flex;
-  flex-wrap: wrap;
+.schedule-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
-  align-items: flex-start;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-.section-divider {
-  margin: 1.5rem 0;
-  max-width: 560px;
+.template-preview {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+
+  mat-icon {
+    color: var(--gold);
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 0.15rem;
+  }
+
+  span {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  p {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
 }
 
-.full-width { width: 100%; margin-bottom: 0.5rem; }
+.day-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(76, 175, 80, 0.08);
+  color: var(--silver-green);
+  font-weight: 500;
+  text-transform: capitalize;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.rules-hint {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+button mat-icon {
+  margin-right: 0.35rem;
+}
+
+button mat-spinner {
+  display: inline-block;
+}
