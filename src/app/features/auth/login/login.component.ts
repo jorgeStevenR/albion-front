@@ -38,7 +38,6 @@ export class LoginComponent implements OnInit {
   loading = false;
   hidePassword = true;
   guildName = '';
-  defaultPasswordHint = '';
 
   form = this.fb.nonNullable.group({
     albionName: ['', [Validators.required]],
@@ -49,7 +48,6 @@ export class LoginComponent implements OnInit {
     this.guildService.getGuildInfo().subscribe({
       next: (info) => {
         this.guildName = info.name;
-        this.defaultPasswordHint = info.defaultMemberPasswordHint;
       },
     });
   }

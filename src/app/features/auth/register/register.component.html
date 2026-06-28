@@ -11,11 +11,6 @@
         No hace falta registrarse manualmente. Cuando entras al gremio en Albion,
         tu cuenta se crea sola en la app.
       </p>
-      @if (defaultPasswordHint) {
-        <p class="password-hint">
-          Contraseña inicial: <strong>{{ defaultPasswordHint }}</strong>
-        </p>
-      }
     </div>
 
     <a mat-flat-button color="primary" class="submit-btn" routerLink="/auth/login">
@@ -23,8 +18,8 @@
     </a>
 
     <p class="auth-footer">
-      Usa tu <strong>nombre exacto de Albion</strong> y la contraseña por defecto.
-      Luego puedes cambiarla con un admin.
+      Usa tu <strong>nombre exacto de Albion</strong>. Si eres nuevo, pide la contraseña
+      a un admin o caller del gremio.
     </p>
   </mat-card>
 </div>

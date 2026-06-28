@@ -13,7 +13,6 @@ import {
 
 const DEFAULT_GUILD_INFO: GuildInfo = {
   name: 'II TEMPUS FUGIT II',
-  defaultMemberPasswordHint: 'tempus123',
 };
 
 @Injectable({ providedIn: 'root' })

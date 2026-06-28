@@ -16,13 +16,11 @@ export class RegisterComponent implements OnInit {
   private readonly guildService = inject(GuildService);
 
   guildName = '';
-  defaultPasswordHint = '';
 
   ngOnInit(): void {
     this.guildService.getGuildInfo().subscribe({
       next: (info) => {
         this.guildName = info.name;
-        this.defaultPasswordHint = info.defaultMemberPasswordHint;
       },
     });
   }

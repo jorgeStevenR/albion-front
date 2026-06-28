@@ -8,9 +8,6 @@
         <p class="guild-badge">{{ guildName }}</p>
       }
       <p>Inicia sesión con tu nombre de Albion</p>
-      @if (defaultPasswordHint) {
-        <p class="password-hint">Contraseña inicial para miembros nuevos: <strong>{{ defaultPasswordHint }}</strong></p>
-      }
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
