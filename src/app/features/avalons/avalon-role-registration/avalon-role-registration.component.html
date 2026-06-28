@@ -22,6 +22,9 @@
     }
   </div>
 
+  @if (rolesOverview.roles.length === 0) {
+    <p class="empty-roles">No hay puestos configurados para esta avalon. Un líder debe crearla desde una plantilla con roles.</p>
+  } @else {
   <div class="role-grid">
     @for (slot of rolesOverview.roles; track slot.slotKey) {
       <mat-card class="role-card" [class.full]="slot.full" [class.mine]="isRegisteredIn(slot)">
@@ -87,6 +90,5 @@
       </mat-card>
     }
   </div>
-} @else if (rolesOverview && rolesOverview.roles.length === 0) {
-  <p class="empty-roles">No hay puestos configurados para esta avalon. Un líder debe crearla desde una plantilla con roles.</p>
-}
+  }
+} 
