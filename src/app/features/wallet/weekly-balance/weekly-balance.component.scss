@@ -1,0 +1,12 @@
+.table-card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+table { width: 100%; }
+
+.positive { color: var(--silver-green); }
+.negative { color: #ef5350; }

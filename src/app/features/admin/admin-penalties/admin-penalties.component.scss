@@ -1,0 +1,47 @@
+.form-card {
+  margin-top: 1rem;
+  padding: 1.25rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.appeals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.appeal-card {
+  padding: 1rem 1.25rem;
+}
+
+.appeal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.status.pending {
+  color: #ffb74d;
+  font-size: 0.85rem;
+}
+
+.meta {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.review-form {
+  margin-top: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

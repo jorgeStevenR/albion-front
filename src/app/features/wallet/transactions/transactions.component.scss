@@ -1,0 +1,40 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.table-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+}
+
+th {
+  color: var(--text-secondary) !important;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+td {
+  color: var(--text-primary);
+}
+
+.type-chip {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  &.type-sale { background: rgba(76, 175, 80, 0.15); color: var(--silver-green); }
+  &.type-distribution { background: rgba(239, 83, 80, 0.15); color: #ef5350; }
+}
+
+.positive { color: var(--silver-green); font-weight: 600; }
+.negative { color: #ef5350; font-weight: 600; }

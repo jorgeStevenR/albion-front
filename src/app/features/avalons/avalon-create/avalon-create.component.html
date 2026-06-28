@@ -1,0 +1,68 @@
+<app-page-header title="Ping Ava" subtitle="Programa una avaloniana para el gremio"></app-page-header>
+
+@if (canUseTemplates && templates.length) {
+  <mat-card class="form-card template-card">
+    <h3>Desde plantilla de ping</h3>
+    <p class="hint">Usa una plantilla configurada por el admin — crea la ava con roles predefinidos</p>
+    <div class="template-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Plantilla</mat-label>
+        <mat-select [(value)]="selectedTemplateId">
+          @for (t of templates; track t.id) {
+            <mat-option [value]="t.id">{{ t.name }} — {{ t.zone }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha</mat-label>
+        <input matInput [matDatepicker]="tplPicker" [(ngModel)]="templateDate" [ngModelOptions]="{ standalone: true }" />
+        <mat-datepicker-toggle matIconSuffix [for]="tplPicker"></mat-datepicker-toggle>
+        <mat-datepicker #tplPicker></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Hora</mat-label>
+        <input matInput type="time" [(ngModel)]="templateTime" [ngModelOptions]="{ standalone: true }" />
+      </mat-form-field>
+      <button mat-flat-button color="accent" (click)="createFromTemplate()" [disabled]="!selectedTemplateId || templateLoading">
+        @if (templateLoading) {
+          <mat-spinner diameter="20" />
+        } @else {
+          <mat-icon>campaign</mat-icon>
+        }
+        Publicar ping
+      </button>
+    </div>
+  </mat-card>
+
+  <mat-divider class="section-divider">o crear manualmente</mat-divider>
+}
+
+<mat-card class="form-card">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Fecha</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Hora del ping</mat-label>
+      <input matInput type="time" formControlName="scheduledTime" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Zona</mat-label>
+      <input matInput formControlName="zone" placeholder="Ej: Avalonian Roads" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Descripción</mat-label>
+      <textarea matInput rows="3" formControlName="description"></textarea>
+    </mat-form-field>
+
+    <button mat-flat-button color="primary" type="submit" [disabled]="loading">
+      @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Publicar ping }
+    </button>
+  </form>
+</mat-card>

@@ -1,0 +1,28 @@
+.tab-content {
+  margin-top: 1rem;
+}
+
+.empty {
+  color: var(--text-secondary, #999);
+  font-style: italic;
+}
+
+.debit {
+  color: #ef5350;
+}
+
+.appeal-card,
+.review-card {
+  margin-top: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}

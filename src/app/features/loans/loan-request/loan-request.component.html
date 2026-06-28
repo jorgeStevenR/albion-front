@@ -1,0 +1,88 @@
+<app-page-header title="Préstamos" subtitle="Solicitudes y préstamos activos del gremio"></app-page-header>
+
+@if (activeLoans.length > 0) {
+  <div class="active-loans">
+    @for (loan of activeLoans; track loan.id) {
+      <mat-card class="loan-card">
+        <strong>{{ loan.amount | currencySilver }} silver</strong>
+        <span>Cuota pendiente: {{ loan.pendingQuota | currencySilver }}</span>
+        <span>Límite: {{ loan.dueDate | date: 'dd/MM/yyyy' }}</span>
+      </mat-card>
+    }
+  </div>
+}
+
+<mat-tab-group>
+  <mat-tab label="Solicitar préstamo">
+    <mat-card class="form-card">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Monto</mat-label>
+          <input matInput type="number" formControlName="amount" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Motivo</mat-label>
+          <textarea matInput rows="3" formControlName="reason"></textarea>
+        </mat-form-field>
+        <button mat-flat-button color="primary" type="submit">Solicitar</button>
+      </form>
+    </mat-card>
+  </mat-tab>
+
+  <mat-tab label="Historial">
+    <div class="table-container">
+      <table mat-table [dataSource]="myLoans">
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Monto</th>
+          <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+        </ng-container>
+        <ng-container matColumnDef="reason">
+          <th mat-header-cell *matHeaderCellDef>Motivo</th>
+          <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let row">{{ row.status }}</td>
+        </ng-container>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yy' }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="['amount', 'reason', 'status', 'date']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['amount', 'reason', 'status', 'date']"></tr>
+      </table>
+    </div>
+  </mat-tab>
+
+  @if (isAdmin) {
+    <mat-tab label="Administrar">
+      <div class="table-container">
+        <table mat-table [dataSource]="allLoans">
+          <ng-container matColumnDef="player">
+            <th mat-header-cell *matHeaderCellDef>Usuario</th>
+            <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+          </ng-container>
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Monto</th>
+            <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+          </ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let row">{{ row.status }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.status === 'PENDING') {
+                <button mat-icon-button (click)="approve(row.id)"><mat-icon>check</mat-icon></button>
+                <button mat-icon-button color="warn" (click)="reject(row.id)"><mat-icon>close</mat-icon></button>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['player', 'amount', 'status', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['player', 'amount', 'status', 'actions']"></tr>
+        </table>
+      </div>
+    </mat-tab>
+  }
+</mat-tab-group>

@@ -1,0 +1,30 @@
+<div class="auth-page">
+  <div class="auth-bg"></div>
+  <mat-card class="auth-card">
+    <div class="auth-header">
+      <mat-icon>groups</mat-icon>
+      <h1>Acceso al gremio</h1>
+      @if (guildName) {
+        <p class="guild-badge">{{ guildName }}</p>
+      }
+      <p class="info-text">
+        No hace falta registrarse manualmente. Cuando entras al gremio en Albion,
+        tu cuenta se crea sola en la app.
+      </p>
+      @if (defaultPasswordHint) {
+        <p class="password-hint">
+          Contraseña inicial: <strong>{{ defaultPasswordHint }}</strong>
+        </p>
+      }
+    </div>
+
+    <a mat-flat-button color="primary" class="submit-btn" routerLink="/auth/login">
+      Ir al login
+    </a>
+
+    <p class="auth-footer">
+      Usa tu <strong>nombre exacto de Albion</strong> y la contraseña por defecto.
+      Luego puedes cambiarla con un admin.
+    </p>
+  </mat-card>
+</div>

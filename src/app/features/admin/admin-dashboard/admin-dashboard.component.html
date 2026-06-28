@@ -1,0 +1,107 @@
+<app-page-header title="Panel Administrativo" subtitle="Resumen del gremio"></app-page-header>
+
+@if (loading) {
+  <app-loading-spinner message="Cargando estadísticas del gremio..." />
+} @else if (stats) {
+  <section class="stats-section">
+    <h2>Balance del gremio</h2>
+    <div class="stats-grid">
+      <app-stat-card icon="account_balance" label="Tesorería (loot vendido)" [value]="stats.treasuryBalance" [isCurrency]="true" accent="gold" />
+      <app-stat-card icon="inventory_2" label="Loot pendiente de venta" [value]="stats.unsoldLootValue" [isCurrency]="true" accent="blue" />
+      <app-stat-card icon="groups" label="Balance total miembros" [value]="stats.totalMemberWallets" [isCurrency]="true" accent="purple" />
+      <app-stat-card icon="trending_up" label="Ingresos ventas (semana)" [value]="stats.weeklySalesIncome" [isCurrency]="true" accent="green" />
+    </div>
+  </section>
+
+  <section class="stats-section">
+    <h2>Avalonianas</h2>
+    <div class="stats-grid compact">
+      <app-stat-card icon="shield" label="Total avalonianas" [value]="stats.totalAvalons" accent="gold" />
+      <app-stat-card icon="event" label="Esta semana" [value]="stats.weeklyAvalons" accent="green" />
+      <app-stat-card icon="lock_open" label="Abiertas" [value]="stats.openAvalons" accent="blue" />
+      <app-stat-card icon="lock" label="Cerradas" [value]="stats.closedAvalons" accent="purple" />
+      <app-stat-card icon="group" label="Miembros activos" [value]="stats.activeMembers" accent="gold" />
+      <app-stat-card icon="payments" label="Repartos semana" [value]="stats.weeklyMemberEarnings" [isCurrency]="true" accent="green" />
+    </div>
+  </section>
+
+  <div class="panels-row">
+    <mat-card class="panel-card">
+      <mat-card-header>
+        <mat-card-title>Top callers</mat-card-title>
+        <mat-card-subtitle>Quién tira más pings de avaloniana</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (!stats.topCallers.length) {
+          <p class="empty">Sin datos de callers aún.</p>
+        } @else {
+          <table mat-table [dataSource]="stats.topCallers" class="data-table">
+            <ng-container matColumnDef="rank">
+              <th mat-header-cell *matHeaderCellDef>#</th>
+              <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Caller</th>
+              <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="count">
+              <th mat-header-cell *matHeaderCellDef>Avalonianas</th>
+              <td mat-cell *matCellDef="let row">{{ row.avalonCount }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="['rank', 'name', 'count']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['rank', 'name', 'count']"></tr>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="panel-card">
+      <mat-card-header>
+        <mat-card-title>Actividad semanal</mat-card-title>
+        <mat-card-subtitle>Últimas 4 semanas</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @for (week of stats.weeklyStats; track week.weekLabel) {
+          <div class="week-row">
+            <span class="week-label">{{ week.weekLabel }}</span>
+            <div class="bar-group">
+              <div class="bar-wrap">
+                <div class="bar avalon" [style.width.%]="getChartPercent(week.avalonCount, 'avalonCount')"></div>
+              </div>
+              <span class="bar-meta">{{ week.avalonCount }} avas · {{ week.salesIncome | currencySilver }}</span>
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="admin-links">
+    <mat-card class="link-card">
+      <mat-icon>swap_horiz</mat-icon>
+      <h3>Movimientos del gremio</h3>
+      <p>Ventas, repartos y entradas de plata</p>
+      <a mat-stroked-button routerLink="/admin/transactions">Ver movimientos</a>
+    </mat-card>
+    <mat-card class="link-card">
+      <mat-icon>campaign</mat-icon>
+      <h3>Plantillas de Ava</h3>
+      <p>11 puestos con sets de equipamiento personalizados</p>
+      <a mat-stroked-button routerLink="/admin/ping-templates">Gestionar</a>
+    </mat-card>
+    <mat-card class="link-card">
+      <mat-icon>group</mat-icon>
+      <h3>Usuarios y balances</h3>
+      <p>Balance y ganancias por miembro</p>
+      <a mat-stroked-button routerLink="/players">Ver usuarios</a>
+    </mat-card>
+    <mat-card class="link-card">
+      <mat-icon>shield</mat-icon>
+      <h3>Avalonianas</h3>
+      <p>{{ stats.totalAvalons }} registradas</p>
+      <a mat-stroked-button routerLink="/avalons">Gestionar</a>
+    </mat-card>
+  </div>
+} @else {
+  <p class="empty">No se pudieron cargar las estadísticas. Reinicia el backend.</p>
+}

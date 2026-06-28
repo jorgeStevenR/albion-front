@@ -1,0 +1,189 @@
+@if (loading) {
+  <app-loading-spinner message="Cargando multas..." />
+} @else {
+  @if (canManage) {
+    <div class="penalty-forms">
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>person_off</mat-icon>
+            No asistió + reemplazo
+          </mat-card-title>
+          <mat-card-subtitle>
+            Multa al que no fue; la misma plata va al que lo reemplazó
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form class="inline-form" [formGroup]="noShowForm" (ngSubmit)="applyNoShow()">
+            <mat-form-field appearance="outline">
+              <mat-label>No asistió</mat-label>
+              <mat-select formControlName="noShowPlayerId">
+                @for (p of registeredPlayers; track p.playerId) {
+                  <mat-option [value]="p.playerId">{{ p.albionName }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Reemplazó</mat-label>
+              <mat-select formControlName="replacementPlayerId">
+                @for (p of allPlayers; track p.id) {
+                  <mat-option [value]="p.id">{{ p.albionName }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Monto (silver)</mat-label>
+              <input matInput type="number" formControlName="amount" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Motivo (opcional)</mat-label>
+              <input matInput formControlName="reason" />
+            </mat-form-field>
+            <button mat-flat-button color="warn" type="submit" [disabled]="submitting || noShowForm.invalid">
+              Aplicar
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>groups</mat-icon>
+            Multa masiva
+          </mat-card-title>
+          <mat-card-subtitle>
+            Descuenta a todos los jugadores registrados en roles ({{ registeredPlayers.length }})
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form class="inline-form" [formGroup]="massFineForm" (ngSubmit)="applyMassFine()">
+            <mat-form-field appearance="outline">
+              <mat-label>Monto por jugador</mat-label>
+              <input matInput type="number" formControlName="amount" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Motivo</mat-label>
+              <input matInput formControlName="reason" />
+            </mat-form-field>
+            <button mat-flat-button color="warn" type="submit" [disabled]="submitting || massFineForm.invalid || !registeredPlayers.length">
+              Multar a todos
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>tune</mat-icon>
+            Ajuste individual
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form class="inline-form" [formGroup]="manualForm" (ngSubmit)="applyManual()">
+            <mat-form-field appearance="outline">
+              <mat-label>Jugador</mat-label>
+              <mat-select formControlName="playerId">
+                @for (p of allPlayers; track p.id) {
+                  <mat-option [value]="p.id">{{ p.albionName }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo</mat-label>
+              <mat-select formControlName="direction">
+                <mat-option value="DEBIT">Multa (descuento)</mat-option>
+                <mat-option value="CREDIT">Recompensa (abono)</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Monto</mat-label>
+              <input matInput type="number" formControlName="amount" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Motivo</mat-label>
+              <input matInput formControlName="reason" />
+            </mat-form-field>
+            <button mat-stroked-button type="submit" [disabled]="submitting || manualForm.invalid">
+              Aplicar
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      @if (canManageDelegates) {
+        <mat-card class="form-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>supervisor_account</mat-icon>
+              Delegados del ping
+            </mat-card-title>
+            <mat-card-subtitle>
+              Personas que pueden aplicar multas en esta avaloniana
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form class="inline-form" [formGroup]="delegateForm" (ngSubmit)="assignDelegate()">
+              <mat-form-field appearance="outline">
+                <mat-label>Jugador</mat-label>
+                <mat-select formControlName="playerId">
+                  @for (p of allPlayers; track p.id) {
+                    <mat-option [value]="p.id">{{ p.albionName }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <button mat-stroked-button type="submit">Asignar</button>
+            </form>
+            <div class="delegate-chips">
+              @for (d of delegates; track d.id) {
+                <mat-chip (removed)="removeDelegate(d.playerId)">
+                  {{ d.playerName }}
+                  <button matChipRemove><mat-icon>cancel</mat-icon></button>
+                </mat-chip>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <mat-divider />
+  }
+
+  <h3 class="section-title">Historial de multas y ajustes</h3>
+  @if (!penalties.length) {
+    <p class="empty">No hay multas registradas para esta avaloniana.</p>
+  } @else {
+    <table mat-table [dataSource]="penalties" class="data-table">
+      <ng-container matColumnDef="player">
+        <th mat-header-cell *matHeaderCellDef>Jugador</th>
+        <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>Tipo</th>
+        <td mat-cell *matCellDef="let row">{{ penaltyTypeLabel(row.type) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Monto</th>
+        <td mat-cell *matCellDef="let row" [class.debit]="row.direction === 'DEBIT'" [class.credit]="row.direction === 'CREDIT'">
+          {{ row.direction === 'DEBIT' ? '-' : '+' }}{{ row.amount | currencySilver }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="reason">
+        <th mat-header-cell *matHeaderCellDef>Motivo</th>
+        <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let row">{{ row.status }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Fecha</th>
+        <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="['player', 'type', 'amount', 'reason', 'status', 'date']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['player', 'type', 'amount', 'reason', 'status', 'date']"></tr>
+    </table>
+  }
+}

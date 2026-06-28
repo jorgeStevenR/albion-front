@@ -1,0 +1,103 @@
+<app-page-header
+  [title]="'Hola, ' + playerName"
+  subtitle="Tu balance y avalonianas abiertas para inscribirte"
+></app-page-header>
+
+@if (loading) {
+  <app-loading-spinner message="Cargando tu panel..." />
+} @else {
+  <div class="stats-grid">
+    <app-stat-card
+      icon="account_balance_wallet"
+      label="Mi balance"
+      [value]="balance"
+      [isCurrency]="true"
+      accent="gold"
+    />
+    <app-stat-card
+      icon="trending_up"
+      label="Ganado esta semana"
+      [value]="weeklyEarnings"
+      [isCurrency]="true"
+      accent="green"
+      trend="+7 días"
+      [trendPositive]="weeklyEarnings > 0"
+    />
+    <app-stat-card
+      icon="savings"
+      label="Total ganado"
+      [value]="totalEarned"
+      [isCurrency]="true"
+      accent="blue"
+    />
+    <app-stat-card
+      icon="shield"
+      label="Avas participadas"
+      [value]="avalonParticipations"
+      accent="purple"
+    />
+  </div>
+
+  <mat-card class="section-card open-avalons-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>campaign</mat-icon>
+      <mat-card-title>Avalonianas abiertas</mat-card-title>
+      <mat-card-subtitle>Los callers publican aquí — elige tu rol e inscríbete</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @if (openAvalons.length === 0) {
+        <app-empty-state
+          icon="shield"
+          title="Sin pings activos"
+          description="Cuando un caller o admin lance una avaloniana, aparecerá aquí para que te inscribas."
+          actionLabel="Ver historial"
+          (actionClick)="goToAvalons()"
+        />
+      } @else {
+        <ul class="open-avalons-list">
+          @for (ava of openAvalons; track ava.id) {
+            <li>
+              <div class="ava-info">
+                <strong>{{ ava.zone }}</strong>
+                <span class="ava-time">{{ formatAvalonWhen(ava) }}</span>
+                @if (ava.createdByName) {
+                  <span class="ava-caller">Caller: {{ ava.createdByName }}</span>
+                }
+                @if (ava.description) {
+                  <p class="ava-desc">{{ ava.description }}</p>
+                }
+              </div>
+              <a mat-flat-button color="primary" [routerLink]="['/avalons', ava.id]">
+                <mat-icon>how_to_reg</mat-icon>
+                Inscribirme
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (recentDistributions.length > 0) {
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>payments</mat-icon>
+        <mat-card-title>Últimos pagos recibidos</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ul class="payments-list">
+          @for (d of recentDistributions; track d.id) {
+            <li>
+              <div>
+                <strong>{{ d.avalonZone }}</strong>
+                <span>{{ d.createdAt | date: 'dd/MM/yyyy' }}</span>
+              </div>
+              <span class="amount">+{{ d.amount | currencySilver }}</span>
+            </li>
+          }
+        </ul>
+        <a mat-stroked-button routerLink="/wallet/transactions" class="link-more">Ver movimientos</a>
+      </mat-card-content>
+    </mat-card>
+  }
+}

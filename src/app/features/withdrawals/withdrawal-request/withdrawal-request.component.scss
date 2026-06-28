@@ -1,0 +1,64 @@
+@use '../../wallet/transactions/transactions.component.scss';
+
+.tab-content {
+  padding-top: 1rem;
+}
+
+.request-forms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.form-card {
+  padding: 1.25rem;
+
+  h3 {
+    margin: 0 0 1rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.section-title {
+  margin: 1.25rem 0 0.75rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.inner-tabs {
+  margin-top: 0.5rem;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  &.status-pending {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ffb74d;
+  }
+
+  &.status-approved,
+  &.status-active {
+    background: rgba(76, 175, 80, 0.15);
+    color: #81c784;
+  }
+
+  &.status-rejected {
+    background: rgba(239, 83, 80, 0.15);
+    color: #ef5350;
+  }
+}
+
+td button {
+  margin-right: 0.35rem;
+  margin-bottom: 0.25rem;
+}

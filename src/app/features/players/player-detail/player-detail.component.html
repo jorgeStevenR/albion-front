@@ -1,0 +1,112 @@
+@if (loading) {
+  <app-loading-spinner />
+} @else if (guildPlayer) {
+  <app-page-header
+    [title]="guildPlayer.albionName"
+    [subtitle]="guildPlayer.guildName + ' · ' + guildPlayer.rank"
+  >
+    <a mat-stroked-button routerLink="/players">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </a>
+  </app-page-header>
+
+  <div class="summary-cards">
+    <mat-card class="summary-card highlight">
+      <span class="label">Balance</span>
+      <strong>{{ guildPlayer.balance | currencySilver }}</strong>
+    </mat-card>
+    <mat-card class="summary-card">
+      <span class="label">Estado</span>
+      <strong [class.active]="guildPlayer.active" [class.inactive]="!guildPlayer.active">
+        {{ guildPlayer.active ? 'Activo' : 'Inactivo' }}
+      </strong>
+    </mat-card>
+    <mat-card class="summary-card">
+      <span class="label">Participaciones Avalon</span>
+      <strong>{{ guildPlayer.avalonParticipations.length }}</strong>
+    </mat-card>
+  </div>
+
+  <mat-tab-group animationDuration="200ms">
+    <mat-tab label="Historial de repartos">
+      <div class="table-container">
+        @if (guildPlayer.distributions.length === 0) {
+          <p class="empty-message">Sin repartos registrados.</p>
+        } @else {
+          <table mat-table [dataSource]="guildPlayer.distributions">
+            <ng-container matColumnDef="avalonZone">
+              <th mat-header-cell *matHeaderCellDef>Zona</th>
+              <td mat-cell *matCellDef="let row">{{ row.avalonZone }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Monto</th>
+              <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+            </ng-container>
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="distributionColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: distributionColumns"></tr>
+          </table>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Avalonianas">
+      <div class="table-container">
+        @if (guildPlayer.avalonParticipations.length === 0) {
+          <p class="empty-message">Sin participaciones en avalonianas.</p>
+        } @else {
+          <table mat-table [dataSource]="guildPlayer.avalonParticipations">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let row">{{ row.date | date: 'dd/MM/yyyy' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="zone">
+              <th mat-header-cell *matHeaderCellDef>Zona</th>
+              <td mat-cell *matCellDef="let row">{{ row.zone }}</td>
+            </ng-container>
+            <ng-container matColumnDef="participantType">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let row">{{ row.participantType }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="avalonColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: avalonColumns"></tr>
+          </table>
+        }
+      </div>
+    </mat-tab>
+
+    @if (isAdmin && account) {
+      <mat-tab label="Cuenta de acceso">
+        <mat-card class="form-card">
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Usuario Albion</mat-label>
+              <input matInput formControlName="albionName" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Discord</mat-label>
+              <input matInput formControlName="discordName" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Rol sistema</mat-label>
+              <mat-select formControlName="role">
+                @for (r of roles; track r) {
+                  <mat-option [value]="r">{{ r }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nueva contraseña (opcional)</mat-label>
+              <input matInput type="password" formControlName="password" />
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit">Guardar cambios</button>
+          </form>
+        </mat-card>
+      </mat-tab>
+    }
+  </mat-tab-group>
+}

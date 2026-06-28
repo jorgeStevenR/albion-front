@@ -1,0 +1,92 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-card {
+  margin-bottom: 1.5rem;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color);
+  border-radius: 12px !important;
+}
+
+.open-avalons-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .ava-time {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+  }
+
+  .ava-caller {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-top: 0.2rem;
+  }
+
+  .ava-desc {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  a mat-icon {
+    margin-right: 0.25rem;
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.payments-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-color);
+
+    span {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .amount {
+      color: var(--silver-green);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+  }
+}
+
+.link-more {
+  margin-top: 0.5rem;
+}

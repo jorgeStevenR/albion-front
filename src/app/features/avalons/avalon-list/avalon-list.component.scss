@@ -1,0 +1,19 @@
+@use '../../wallet/transactions/transactions.component.scss';
+
+.status-chip {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--silver-green);
+
+  &.finished {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ffb74d;
+  }
+
+  &.closed {
+    background: rgba(158, 158, 158, 0.15);
+    color: var(--text-secondary);
+  }
+}

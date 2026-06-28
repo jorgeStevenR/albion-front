@@ -1,0 +1,28 @@
+.search-wrap {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.item-icon,
+.item-icon-selected {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.item-icon-selected {
+  margin-right: 8px;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.item-icon {
+  flex-shrink: 0;
+}

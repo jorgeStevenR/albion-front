@@ -1,0 +1,70 @@
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  padding: 1rem 1.25rem;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color);
+
+  .label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+  }
+
+  strong {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+
+  .discount { color: #ef5350; }
+
+  &.highlight {
+    border-color: var(--gold);
+    strong { color: var(--gold); }
+  }
+}
+
+.inline-form, .loot-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.data-table {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+mat-form-field { flex: 1; min-width: 140px; }
+
+.tab-content {
+  padding: 1rem 0;
+}
+
+.sold {
+  color: #66bb6a;
+  font-size: 0.85rem;
+}
+
+.unsold {
+  color: #ffb74d;
+  font-size: 0.85rem;
+}
+
+.sale-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 0.5rem;
+}

@@ -1,0 +1,52 @@
+.penalty-forms {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+}
+
+.wide {
+  flex: 1;
+  min-width: 200px;
+}
+
+.delegate-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.section-title {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.empty {
+  color: var(--text-secondary, #999);
+  font-style: italic;
+}
+
+.debit {
+  color: #ef5350;
+}
+
+.credit {
+  color: #66bb6a;
+}

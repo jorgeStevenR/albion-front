@@ -1,0 +1,108 @@
+<app-page-header title="Plantillas de Ava" subtitle="Define los 11 puestos del gremio con su set de equipamiento personalizado">
+  <button mat-flat-button color="primary" (click)="showForm = !showForm">
+    <mat-icon>{{ showForm ? 'close' : 'add' }}</mat-icon>
+    {{ showForm ? 'Cancelar' : 'Nueva plantilla' }}
+  </button>
+</app-page-header>
+
+@if (showForm) {
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Configurar plantilla</mat-card-title>
+      <mat-card-subtitle>{{ totalPlayers() }} jugadores en total — como el ping de Discord</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form class="meta-form" [formGroup]="form" (ngSubmit)="create()">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Zona</mat-label>
+          <input matInput formControlName="zone" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full" subscriptSizing="dynamic">
+          <mat-label>Descripción</mat-label>
+          <input matInput formControlName="description" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full" subscriptSizing="dynamic">
+          <mat-label>Mensaje Discord</mat-label>
+          <textarea matInput rows="3" formControlName="pingMessage"></textarea>
+        </mat-form-field>
+      </form>
+
+      <div class="party-slots">
+        @for (slot of partySlots; track slot.slotKey) {
+          <mat-expansion-panel class="slot-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ slot.displayName }}</mat-panel-title>
+              <mat-panel-description>{{ slot.maxPlayers }} / {{ slot.maxPlayers }} plazas</mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <p class="slot-hint">Set de equipamiento para quienes se inscriban como <strong>{{ slot.displayName }}</strong></p>
+            <app-equipment-grid
+              [editMode]="true"
+              [slotData]="getGridData(slot)"
+              (slotChange)="onGridChange(slot, $event)"
+            />
+            <app-swap-inventory
+              [editMode]="true"
+              [items]="slot.swapItems"
+              (itemsChange)="onSwapsChange(slot, $event)"
+            />
+          </mat-expansion-panel>
+        }
+      </div>
+
+      <button mat-flat-button color="primary" (click)="create()" [disabled]="submitting || form.invalid">
+        Guardar plantilla ({{ totalPlayers() }} jugadores)
+      </button>
+    </mat-card-content>
+  </mat-card>
+}
+
+@if (loading) {
+  <app-loading-spinner message="Cargando plantillas..." />
+} @else {
+  <h3 class="section-title">Plantillas activas</h3>
+  @for (t of templates; track t.id) {
+    <mat-expansion-panel class="template-panel" [class.inactive]="!t.active">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ t.name }} — {{ t.zone }}</mat-panel-title>
+        <mat-panel-description>
+          {{ t.active ? 'Activa' : 'Inactiva' }} · {{ templatePlayerCount(t) }} jugadores
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      @if (t.pingMessage) {
+        <pre class="ping-message">{{ t.pingMessage }}</pre>
+        <button mat-stroked-button type="button" (click)="copyMessage(t.pingMessage!)">
+          <mat-icon>content_copy</mat-icon> Copiar ping
+        </button>
+      }
+
+      <div class="saved-slots">
+        @for (s of t.roleSlots; track s.slotKey) {
+          <mat-expansion-panel class="slot-preview">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ s.displayName }}</mat-panel-title>
+              <mat-panel-description>{{ s.maxPlayers }} plazas · {{ s.buildSlots?.length ?? 0 }} equip · {{ s.swapItems?.length ?? 0 }} swaps</mat-panel-description>
+            </mat-expansion-panel-header>
+            @if (s.buildSlots?.length) {
+              <app-equipment-grid [editMode]="false" [slotData]="slotItemMap(s.buildSlots!)" />
+            } @else {
+              <p class="empty-build">Sin set configurado</p>
+            }
+            @if (s.swapItems?.length) {
+              <app-swap-inventory [editMode]="false" [items]="s.swapItems!" />
+            }
+          </mat-expansion-panel>
+        }
+      </div>
+
+      @if (t.active) {
+        <button mat-stroked-button color="warn" (click)="deactivate(t.id)">Desactivar</button>
+      }
+    </mat-expansion-panel>
+  }
+}

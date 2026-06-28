@@ -1,0 +1,130 @@
+<app-page-header
+  title="Multas"
+  subtitle="Gestión de multas y apelaciones del gremio"
+></app-page-header>
+
+@if (loading) {
+  <app-loading-spinner message="Cargando multas..." />
+} @else {
+  <mat-tab-group animationDuration="200ms">
+    <mat-tab label="Crear multa">
+      <mat-card class="form-card">
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Avaloniana</mat-label>
+            <mat-select formControlName="avalonId">
+              @for (a of avalons; track a.id) {
+                <mat-option [value]="a.id">{{ a.zone }} — {{ a.date }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Jugador</mat-label>
+            <mat-select formControlName="playerId">
+              @for (p of players; track p.id) {
+                <mat-option [value]="p.id">{{ p.albionName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tipo</mat-label>
+            <mat-select formControlName="direction">
+              <mat-option value="DEBIT">Descuento (multa)</mat-option>
+              <mat-option value="CREDIT">Abono</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Monto (silver)</mat-label>
+            <input matInput type="number" formControlName="amount" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Motivo</mat-label>
+            <textarea matInput rows="3" formControlName="reason"></textarea>
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="submit">Crear multa</button>
+        </form>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab [label]="'Todas las multas (' + penalties.length + ')'">
+      @if (penalties.length === 0) {
+        <app-empty-state icon="gavel" title="Sin multas" description="No hay multas registradas" />
+      } @else {
+        <div class="table-container">
+          <table mat-table [dataSource]="penalties">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yy' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="player">
+              <th mat-header-cell *matHeaderCellDef>Jugador</th>
+              <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="avalon">
+              <th mat-header-cell *matHeaderCellDef>Avalon</th>
+              <td mat-cell *matCellDef="let row">{{ row.avalonZone }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Monto</th>
+              <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+            </ng-container>
+            <ng-container matColumnDef="direction">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let row">{{ directionLabel(row.direction) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="reason">
+              <th mat-header-cell *matHeaderCellDef>Motivo</th>
+              <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="['date', 'player', 'avalon', 'amount', 'direction', 'reason']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['date', 'player', 'avalon', 'amount', 'direction', 'reason']"></tr>
+          </table>
+        </div>
+      }
+    </mat-tab>
+
+    <mat-tab [label]="'Apelaciones (' + appeals.length + ')'">
+      @if (appeals.length === 0) {
+        <app-empty-state icon="forum" title="Sin apelaciones" description="No hay apelaciones registradas" />
+      } @else {
+        <div class="appeals-list">
+          @for (appeal of appeals; track appeal.id) {
+            <mat-card class="appeal-card">
+              <div class="appeal-header">
+                <strong>{{ appeal.playerName }}</strong>
+                <span class="status" [class.pending]="appeal.status === 'PENDING'">
+                  {{ appealStatusLabel(appeal.status) }}
+                </span>
+              </div>
+              <p class="meta">
+                {{ appeal.avalonZone }} · {{ appeal.amount | currencySilver }} · {{ appeal.createdAt | date: 'dd/MM/yyyy' }}
+              </p>
+              <p><strong>Multa:</strong> {{ appeal.penaltyReason }}</p>
+              <p><strong>Apelación:</strong> {{ appeal.reason }}</p>
+              @if (appeal.reviewNotes) {
+                <p><strong>Respuesta:</strong> {{ appeal.reviewNotes }}</p>
+              }
+              @if (appeal.status === 'PENDING') {
+                @if (reviewingAppealId === appeal.id) {
+                  <form [formGroup]="reviewForm" class="review-form">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Notas de respuesta</mat-label>
+                      <textarea matInput rows="2" formControlName="reviewNotes"></textarea>
+                    </mat-form-field>
+                    <div class="actions">
+                      <button mat-flat-button color="primary" type="button" (click)="review('APPROVED')">Aprobar</button>
+                      <button mat-stroked-button color="warn" type="button" (click)="review('REJECTED')">Rechazar</button>
+                      <button mat-button type="button" (click)="reviewingAppealId = null">Cancelar</button>
+                    </div>
+                  </form>
+                } @else {
+                  <button mat-stroked-button color="primary" (click)="startReview(appeal.id)">Responder</button>
+                }
+              }
+            </mat-card>
+          }
+        </div>
+      }
+    </mat-tab>
+  </mat-tab-group>
+}

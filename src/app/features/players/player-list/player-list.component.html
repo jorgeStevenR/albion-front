@@ -1,0 +1,156 @@
+<app-page-header title="Gestión de jugadores" subtitle="Sincronización del gremio y cuentas de acceso">
+  @if (isAdmin) {
+    <button mat-flat-button color="primary" (click)="showForm = !showForm">
+      <mat-icon>{{ showForm ? 'close' : 'person_add' }}</mat-icon>
+      {{ showForm ? 'Cancelar' : 'Nueva cuenta' }}
+    </button>
+  }
+</app-page-header>
+
+@if (isAdmin) {
+  <div class="sync-form">
+    <h3>Sincronizar gremio</h3>
+    <p class="guild-name">{{ guildName }}</p>
+    <p class="hint">Solo se sincronizan miembros de este gremio. Los nuevos entran con contraseña por defecto.</p>
+    <button mat-flat-button color="accent" type="button" (click)="syncGuild()" [disabled]="syncing">
+      @if (syncing) {
+        <mat-spinner diameter="20" />
+      } @else {
+        <mat-icon>sync</mat-icon>
+      }
+      Sincronizar miembros
+    </button>
+  </div>
+}
+
+@if (showForm && isAdmin) {
+  <div class="create-form">
+    <h3>Nueva cuenta de acceso</h3>
+    <form [formGroup]="form" (ngSubmit)="create()">
+      <mat-form-field appearance="outline">
+        <mat-label>Usuario Albion</mat-label>
+        <input matInput formControlName="albionName" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Discord</mat-label>
+        <input matInput formControlName="discordName" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Rol</mat-label>
+        <mat-select formControlName="role">
+          @for (r of roles; track r) {
+            <mat-option [value]="r">{{ r }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Contraseña</mat-label>
+        <input matInput type="password" formControlName="password" />
+      </mat-form-field>
+      <button mat-flat-button color="primary" type="submit">Crear</button>
+    </form>
+  </div>
+}
+
+@if (loading) {
+  <app-loading-spinner message="Cargando jugadores..." />
+} @else {
+  <mat-tab-group animationDuration="200ms">
+    <mat-tab label="Miembros del gremio">
+      <div class="table-container">
+        @if (syncedPlayers.length === 0) {
+          <p class="empty-message">
+            No hay miembros sincronizados. @if (isAdmin) { Usa el botón de arriba para importar el gremio. }
+          </p>
+        } @else {
+          <table mat-table [dataSource]="syncedPlayers">
+            <ng-container matColumnDef="albionName">
+              <th mat-header-cell *matHeaderCellDef>Albion</th>
+              <td mat-cell *matCellDef="let row">{{ row.albionName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="rank">
+              <th mat-header-cell *matHeaderCellDef>Rango</th>
+              <td mat-cell *matCellDef="let row">{{ row.rank }}</td>
+            </ng-container>
+            <ng-container matColumnDef="balance">
+              <th mat-header-cell *matHeaderCellDef>Balance</th>
+              <td mat-cell *matCellDef="let row">{{ (row.balance ?? 0) | currencySilver }}</td>
+            </ng-container>
+            <ng-container matColumnDef="totalEarned">
+              <th mat-header-cell *matHeaderCellDef>Generado</th>
+              <td mat-cell *matCellDef="let row">{{ (row.totalEarned ?? 0) | currencySilver }}</td>
+            </ng-container>
+            <ng-container matColumnDef="avalonCount">
+              <th mat-header-cell *matHeaderCellDef>Avas</th>
+              <td mat-cell *matCellDef="let row">{{ row.avalonCount ?? 0 }}</td>
+            </ng-container>
+            <ng-container matColumnDef="active">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let row">
+                <span [class.active]="row.active" [class.inactive]="!row.active">
+                  {{ row.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <a mat-icon-button [routerLink]="['/players', row.id]">
+                  <mat-icon>visibility</mat-icon>
+                </a>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="guildColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: guildColumns"></tr>
+          </table>
+        }
+      </div>
+    </mat-tab>
+
+    @if (isAdmin) {
+      <mat-tab label="Cuentas de acceso">
+        <div class="table-container">
+          <table mat-table [dataSource]="players">
+            <ng-container matColumnDef="albionName">
+              <th mat-header-cell *matHeaderCellDef>Albion</th>
+              <td mat-cell *matCellDef="let row">{{ row.albionName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="discordName">
+              <th mat-header-cell *matHeaderCellDef>Discord</th>
+              <td mat-cell *matCellDef="let row">{{ row.discordName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="role">
+              <th mat-header-cell *matHeaderCellDef>Rol sistema</th>
+              <td mat-cell *matCellDef="let row">{{ row.role }}</td>
+            </ng-container>
+            <ng-container matColumnDef="active">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let row">
+                <span [class.active]="row.active" [class.inactive]="!row.active">
+                  {{ row.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef>Creado</th>
+              <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yy' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <a mat-icon-button [routerLink]="['/players', row.id]"><mat-icon>edit</mat-icon></a>
+                @if (row.active) {
+                  <button mat-icon-button color="warn" (click)="deactivate(row.id)">
+                    <mat-icon>block</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="accountColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: accountColumns"></tr>
+          </table>
+        </div>
+      </mat-tab>
+    }
+  </mat-tab-group>
+}

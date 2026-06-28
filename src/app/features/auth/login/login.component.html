@@ -1,0 +1,61 @@
+<div class="auth-page">
+  <div class="auth-bg"></div>
+  <mat-card class="auth-card">
+    <div class="auth-header">
+      <mat-icon>castle</mat-icon>
+      <h1>Albion Guild Treasury</h1>
+      @if (guildName) {
+        <p class="guild-badge">{{ guildName }}</p>
+      }
+      <p>Inicia sesión con tu nombre de Albion</p>
+      @if (defaultPasswordHint) {
+        <p class="password-hint">Contraseña inicial para miembros nuevos: <strong>{{ defaultPasswordHint }}</strong></p>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Usuario Albion</mat-label>
+        <input matInput formControlName="albionName" placeholder="Tu nombre en Albion" />
+        <mat-icon matPrefix>person</mat-icon>
+        @if (form.controls.albionName.hasError('required') && form.controls.albionName.touched) {
+          <mat-error>El usuario es obligatorio</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contraseña</mat-label>
+        <input
+          matInput
+          [type]="hidePassword ? 'password' : 'text'"
+          formControlName="password"
+        />
+        <mat-icon matPrefix>lock</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword = !hidePassword"
+        >
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (form.controls.password.hasError('required') && form.controls.password.touched) {
+          <mat-error>La contraseña es obligatoria</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" class="submit-btn" type="submit" [disabled]="loading">
+        @if (loading) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          Iniciar sesión
+        }
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      ¿Eres del gremio?
+      <a routerLink="/auth/register">Cómo acceder</a>
+    </p>
+  </mat-card>
+</div>

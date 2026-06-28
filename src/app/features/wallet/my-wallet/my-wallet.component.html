@@ -1,0 +1,151 @@
+@if (isGuildView) {
+  <app-page-header
+    title="Balance Gremial"
+    subtitle="Tesorería del gremio y tu cuenta personal"
+  ></app-page-header>
+} @else {
+  <app-page-header
+    title="Mi Balance"
+    [subtitle]="'Cuenta de ' + playerName"
+  ></app-page-header>
+}
+
+@if (loading) {
+  <app-loading-spinner [message]="isGuildView ? 'Cargando balance gremial...' : 'Cargando tu balance...'" />
+} @else if (!isGuildView) {
+  <div class="stats-grid">
+    <app-stat-card icon="account_balance_wallet" label="Balance actual" [value]="balance" [isCurrency]="true" accent="gold" />
+    <app-stat-card icon="savings" label="Ganado total" [value]="totalEarned" [isCurrency]="true" accent="green" />
+    <app-stat-card icon="shopping_cart" label="Gastado total" [value]="totalSpent" [isCurrency]="true" accent="blue" />
+  </div>
+  <mat-card class="info-card">
+    <p>
+      Tu balance se actualiza cuando se reparten recompensas de avalonianas o realizas compras en el gremio.
+    </p>
+  </mat-card>
+} @else {
+  <mat-tab-group animationDuration="200ms">
+    <mat-tab label="Resumen">
+      <div class="tab-content">
+        <div class="stats-grid">
+          <app-stat-card
+            icon="account_balance"
+            label="Tesorería gremio"
+            [value]="treasuryBalance"
+            [isCurrency]="true"
+            accent="gold"
+          />
+          <app-stat-card
+            icon="account_balance_wallet"
+            label="Tu balance"
+            [value]="balance"
+            [isCurrency]="true"
+            accent="green"
+          />
+          <app-stat-card
+            icon="savings"
+            label="Ganado total"
+            [value]="totalEarned"
+            [isCurrency]="true"
+            accent="blue"
+          />
+        </div>
+
+        @if (guildStats) {
+          <mat-card class="info-card">
+            <p>
+              Esta semana: {{ guildStats.weeklySalesIncome | currencySilver }} ingresados por ventas
+              y {{ guildStats.weeklyMemberEarnings | currencySilver }} pagados a jugadores.
+              {{ guildStats.openAvalons }} avas abiertas,
+              {{ guildStats.finishedAvalons ?? 0 }} terminadas y {{ guildStats.closedAvalons }} cerradas.
+            </p>
+          </mat-card>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Avas culminadas">
+      <div class="tab-content">
+        @if (completedAvalons.length === 0) {
+          <app-empty-state
+            icon="shield"
+            title="Sin avalonianas culminadas"
+            description="Las avas terminadas o cerradas aparecerán aquí hasta que se venda todo el loot"
+          />
+        } @else {
+          <div class="table-container">
+            <table mat-table [dataSource]="completedAvalons">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Fecha</th>
+                <td mat-cell *matCellDef="let row">
+                  @if (row.scheduledAt) {
+                    {{ row.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}
+                  } @else {
+                    {{ row.date | date: 'dd/MM/yyyy' }}
+                  }
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="zone">
+                <th mat-header-cell *matHeaderCellDef>Zona</th>
+                <td mat-cell *matCellDef="let row">{{ row.zone }}</td>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
+                <td mat-cell *matCellDef="let row">
+                  <span class="status-chip" [class.finished]="row.status === 'FINISHED'" [class.closed]="row.status === 'CLOSED'">
+                    {{ avalonStatusLabel(row.status) }}
+                  </span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let row">
+                  <a mat-icon-button [routerLink]="['/avalons', row.id]">
+                    <mat-icon>visibility</mat-icon>
+                  </a>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['date', 'zone', 'status', 'actions']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['date', 'zone', 'status', 'actions']"></tr>
+            </table>
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Pagos a jugadores">
+      <div class="tab-content">
+        @if (payments.length === 0) {
+          <app-empty-state
+            icon="payments"
+            title="Sin pagos registrados"
+            description="Los repartos de avalonianas aparecerán aquí"
+          />
+        } @else {
+          <div class="table-container">
+            <table mat-table [dataSource]="payments">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Fecha</th>
+                <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="player">
+                <th mat-header-cell *matHeaderCellDef>Jugador</th>
+                <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+              </ng-container>
+              <ng-container matColumnDef="avalon">
+                <th mat-header-cell *matHeaderCellDef>Avalon</th>
+                <td mat-cell *matCellDef="let row">{{ row.avalonZone }}</td>
+              </ng-container>
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef>Monto</th>
+                <td mat-cell *matCellDef="let row">{{ (row.amount < 0 ? -row.amount : row.amount) | currencySilver }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['date', 'player', 'avalon', 'amount']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['date', 'player', 'avalon', 'amount']"></tr>
+            </table>
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+}

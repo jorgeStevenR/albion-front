@@ -1,0 +1,83 @@
+.form-card {
+  margin-bottom: 1.5rem;
+
+  mat-card-header {
+    padding: 1.25rem 1.5rem 0.5rem;
+  }
+
+  mat-card-content {
+    padding: 0.75rem 1.5rem 1.75rem;
+  }
+}
+
+.meta-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding-top: 0.5rem;
+
+  mat-form-field {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+.wide,
+.full {
+  width: 100%;
+}
+
+.party-slots,
+.saved-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.slot-panel,
+.slot-preview {
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 0.25rem;
+}
+
+.slot-panel .mat-expansion-panel-body,
+.slot-preview .mat-expansion-panel-body {
+  padding: 1rem 1.25rem 1.5rem;
+}
+
+.slot-hint {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.25rem;
+  line-height: 1.45;
+}
+
+.section-title {
+  margin: 1.5rem 0 1rem;
+  font-size: 1rem;
+}
+
+.form-card button[mat-flat-button] {
+  margin-top: 0.5rem;
+}
+
+.template-panel {
+  margin-bottom: 0.5rem;
+
+  &.inactive { opacity: 0.6; }
+}
+
+.ping-message {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+}
+
+.empty-build {
+  color: var(--text-secondary);
+  font-style: italic;
+}

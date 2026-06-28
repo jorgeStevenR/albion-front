@@ -1,0 +1,90 @@
+@if (loading) {
+  <app-loading-spinner message="Cargando puestos..." />
+} @else if (rolesOverview) {
+  <div class="roles-header">
+    <div>
+      <h3>Registro de puestos</h3>
+      <p class="subtitle">
+        @if (!rolesOverview.avalonOpen) {
+          Avalon cerrada — solo consulta
+        } @else if (!rolesOverview.registrationsOpen) {
+          Registros cerrados
+        } @else {
+          Elige tu puesto — cada uno tiene su set de equipamiento
+        }
+      </p>
+    </div>
+    @if (canManage && rolesOverview.avalonOpen) {
+      <button mat-stroked-button (click)="toggleRegistrations()">
+        <mat-icon>{{ rolesOverview.registrationsOpen ? 'lock' : 'lock_open' }}</mat-icon>
+        {{ rolesOverview.registrationsOpen ? 'Cerrar registros' : 'Abrir registros' }}
+      </button>
+    }
+  </div>
+
+  <div class="role-grid">
+    @for (slot of rolesOverview.roles; track slot.slotKey) {
+      <mat-card class="role-card" [class.full]="slot.full" [class.mine]="isRegisteredIn(slot)">
+        <div class="role-header">
+          <mat-icon>sports_martial_arts</mat-icon>
+          <div>
+            <strong>{{ slotLabel(slot) }}</strong>
+            <span class="quota">{{ slot.currentPlayers }} / {{ slot.maxPlayers }}</span>
+          </div>
+        </div>
+
+        <div class="role-body">
+          @if (slot.players.length === 0) {
+            <p class="empty-slot">Disponible</p>
+          } @else {
+            <ul>
+              @for (p of slot.players; track p.registrationId) {
+                <li>{{ p.albionName }}</li>
+              }
+            </ul>
+          }
+        </div>
+
+        @if (getBuildSlots(slot).length) {
+          <mat-expansion-panel class="build-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Set de equipamiento</mat-panel-title>
+            </mat-expansion-panel-header>
+            <app-equipment-grid
+              [editMode]="false"
+              [slotData]="slotItemMap(getBuildSlots(slot))"
+            />
+          </mat-expansion-panel>
+        }
+
+        @if (slot.slotSwaps?.length) {
+          <mat-expansion-panel class="build-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Inventario — swaps</mat-panel-title>
+            </mat-expansion-panel-header>
+            <app-swap-inventory [editMode]="false" [items]="slot.slotSwaps!" />
+          </mat-expansion-panel>
+        }
+
+        <div class="role-actions">
+          @if (isRegisteredIn(slot)) {
+            <mat-chip-set><mat-chip highlighted>Inscrito</mat-chip></mat-chip-set>
+            @if (rolesOverview.avalonOpen && rolesOverview.registrationsOpen) {
+              <button mat-stroked-button color="warn" (click)="leaveSlot(slot)" [disabled]="actionSlotKey === slot.slotKey">
+                @if (actionSlotKey === slot.slotKey) { <mat-spinner diameter="18" /> } @else { Cancelar }
+              </button>
+            }
+          } @else if (slot.full) {
+            <span class="status-full">Completo</span>
+          } @else if (canJoin(slot)) {
+            <button mat-flat-button color="primary" (click)="joinSlot(slot)" [disabled]="actionSlotKey === slot.slotKey">
+              @if (actionSlotKey === slot.slotKey) { <mat-spinner diameter="18" /> } @else { Unirme }
+            </button>
+          } @else if (isRegisteredElsewhere()) {
+            <span class="status-muted">Ya inscrito en otro puesto</span>
+          }
+        </div>
+      </mat-card>
+    }
+  </div>
+}

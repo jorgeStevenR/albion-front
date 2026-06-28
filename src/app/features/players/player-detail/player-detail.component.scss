@@ -1,0 +1,40 @@
+@use '../../avalons/avalon-create/avalon-create.component.scss';
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card {
+  padding: 1rem;
+
+  .label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+  }
+
+  strong {
+    font-size: 1.25rem;
+  }
+
+  &.highlight strong {
+    color: var(--silver-green);
+  }
+}
+
+.active { color: var(--silver-green); }
+.inactive { color: #ef5350; }
+
+.empty-message {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.table-container {
+  margin-top: 1rem;
+}

@@ -1,0 +1,318 @@
+<app-page-header
+  title="Solicitudes"
+  [subtitle]="isAdmin ? 'Gestiona adelantos y préstamos del gremio' : 'Adelantos, retiros y préstamos del gremio'"
+></app-page-header>
+
+@if (loading) {
+  <app-loading-spinner message="Cargando solicitudes..." />
+} @else {
+  <mat-tab-group animationDuration="200ms" [selectedIndex]="isAdmin ? 0 : 0">
+    @if (isAdmin) {
+      <mat-tab [label]="'Panel admin (' + pendingCount + ' pendientes)'">
+        <div class="tab-content">
+          <mat-tab-group class="inner-tabs" [(selectedIndex)]="adminTabIndex" animationDuration="150ms">
+            <mat-tab [label]="'Pendientes (' + pendingCount + ')'">
+              <h3 class="section-title">Adelantos / retiros pendientes</h3>
+              @if (pendingWithdrawals.length === 0) {
+                <app-empty-state icon="payments" title="Sin adelantos pendientes" description="No hay solicitudes de adelanto por revisar" />
+              } @else {
+                <ng-container *ngTemplateOutlet="withdrawalAdminTable; context: { rows: pendingWithdrawals, showActions: true }" />
+              }
+
+              <h3 class="section-title">Préstamos pendientes</h3>
+              @if (pendingLoans.length === 0) {
+                <app-empty-state icon="request_quote" title="Sin préstamos pendientes" description="No hay solicitudes de préstamo por revisar" />
+              } @else {
+                <ng-container *ngTemplateOutlet="loanAdminTable; context: { rows: pendingLoans, showActions: true }" />
+              }
+            </mat-tab>
+
+            <mat-tab label="Historial completo">
+              <h3 class="section-title">Todos los adelantos</h3>
+              @if (allRequests.length === 0) {
+                <app-empty-state icon="history" title="Sin historial" description="Aún no hay adelantos registrados" />
+              } @else {
+                <ng-container *ngTemplateOutlet="withdrawalHistoryTable; context: { rows: allRequests }" />
+              }
+
+              <h3 class="section-title">Todos los préstamos</h3>
+              @if (allLoans.length === 0) {
+                <app-empty-state icon="history" title="Sin historial" description="Aún no hay préstamos registrados" />
+              } @else {
+                <ng-container *ngTemplateOutlet="loanHistoryTable; context: { rows: allLoans }" />
+              }
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+      </mat-tab>
+    }
+
+    <mat-tab label="Nueva solicitud">
+      @if (isAdmin) {
+        <div class="tab-content">
+          <app-empty-state
+            icon="admin_panel_settings"
+            title="Solo para jugadores"
+            description="Como administrador gestionas las solicitudes del gremio en el Panel admin. No puedes pedir adelantos ni préstamos para ti."
+          />
+        </div>
+      } @else {
+      <div class="tab-content request-forms">
+        <mat-card class="form-card">
+          <h3>Adelanto / retiro</h3>
+          <form [formGroup]="withdrawalForm" (ngSubmit)="submitWithdrawal()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Monto (silver)</mat-label>
+              <input matInput type="number" formControlName="amount" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Motivo</mat-label>
+              <textarea matInput rows="3" formControlName="reason"></textarea>
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit">Enviar solicitud</button>
+          </form>
+        </mat-card>
+
+        <mat-card class="form-card">
+          <h3>Préstamo</h3>
+          <form [formGroup]="loanForm" (ngSubmit)="submitLoan()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Monto (silver)</mat-label>
+              <input matInput type="number" formControlName="amount" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Motivo</mat-label>
+              <textarea matInput rows="3" formControlName="reason"></textarea>
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit">Solicitar préstamo</button>
+          </form>
+        </mat-card>
+      </div>
+      }
+    </mat-tab>
+
+    @if (!isAdmin) {
+    <mat-tab label="Mi historial">
+      <div class="tab-content">
+        <h3 class="section-title">Mis adelantos</h3>
+        @if (myRequests.length === 0) {
+          <app-empty-state icon="receipt_long" title="Sin adelantos" description="No has enviado solicitudes de adelanto" />
+        } @else {
+          <div class="table-container">
+            <table mat-table [dataSource]="myRequests">
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef>Monto</th>
+                <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+              </ng-container>
+              <ng-container matColumnDef="reason">
+                <th mat-header-cell *matHeaderCellDef>Motivo</th>
+                <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+              </ng-container>
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Fecha</th>
+                <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
+                <td mat-cell *matCellDef="let row">
+                  <span class="status-chip" [class]="statusClass(row.status)">{{ getStatusLabel(row.status) }}</span>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['amount', 'reason', 'date', 'status']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['amount', 'reason', 'date', 'status']"></tr>
+            </table>
+          </div>
+        }
+
+        <h3 class="section-title">Mis préstamos</h3>
+        @if (myLoans.length === 0) {
+          <app-empty-state icon="request_quote" title="Sin préstamos" description="No has solicitado préstamos" />
+        } @else {
+          <div class="table-container">
+            <table mat-table [dataSource]="myLoans">
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef>Monto</th>
+                <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+              </ng-container>
+              <ng-container matColumnDef="reason">
+                <th mat-header-cell *matHeaderCellDef>Motivo</th>
+                <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+              </ng-container>
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Fecha</th>
+                <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
+                <td mat-cell *matCellDef="let row">
+                  <span class="status-chip" [class]="statusClass(row.status)">{{ getStatusLabel(row.status) }}</span>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['amount', 'reason', 'date', 'status']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['amount', 'reason', 'date', 'status']"></tr>
+            </table>
+          </div>
+        }
+      </div>
+    </mat-tab>
+    }
+  </mat-tab-group>
+}
+
+<ng-template #withdrawalAdminTable let-rows="rows" let-showActions="showActions">
+  <div class="table-container">
+    <table mat-table [dataSource]="rows">
+      <ng-container matColumnDef="playerName">
+        <th mat-header-cell *matHeaderCellDef>Jugador</th>
+        <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Monto</th>
+        <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+      </ng-container>
+      <ng-container matColumnDef="reason">
+        <th mat-header-cell *matHeaderCellDef>Motivo</th>
+        <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Fecha</th>
+        <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-chip" [class]="statusClass(row.status)">{{ getStatusLabel(row.status) }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let row">
+          @if (showActions && row.status === 'PENDING') {
+            <button mat-flat-button color="primary" (click)="approveWithdrawal(row.id)">
+              <mat-icon>check</mat-icon> Aprobar
+            </button>
+            <button mat-stroked-button color="warn" (click)="rejectWithdrawal(row.id)">
+              <mat-icon>close</mat-icon> Rechazar
+            </button>
+          }
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="adminColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: adminColumns"></tr>
+    </table>
+  </div>
+</ng-template>
+
+<ng-template #loanAdminTable let-rows="rows" let-showActions="showActions">
+  <div class="table-container">
+    <table mat-table [dataSource]="rows">
+      <ng-container matColumnDef="playerName">
+        <th mat-header-cell *matHeaderCellDef>Jugador</th>
+        <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Monto</th>
+        <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+      </ng-container>
+      <ng-container matColumnDef="reason">
+        <th mat-header-cell *matHeaderCellDef>Motivo</th>
+        <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Fecha</th>
+        <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-chip" [class]="statusClass(row.status)">{{ getStatusLabel(row.status) }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let row">
+          @if (showActions && row.status === 'PENDING') {
+            <button mat-flat-button color="primary" (click)="approveLoan(row.id)">
+              <mat-icon>check</mat-icon> Aprobar
+            </button>
+            <button mat-stroked-button color="warn" (click)="rejectLoan(row.id)">
+              <mat-icon>close</mat-icon> Rechazar
+            </button>
+          }
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="adminColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: adminColumns"></tr>
+    </table>
+  </div>
+</ng-template>
+
+<ng-template #withdrawalHistoryTable let-rows="rows">
+  <div class="table-container">
+    <table mat-table [dataSource]="rows">
+      <ng-container matColumnDef="playerName">
+        <th mat-header-cell *matHeaderCellDef>Jugador</th>
+        <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Monto</th>
+        <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+      </ng-container>
+      <ng-container matColumnDef="reason">
+        <th mat-header-cell *matHeaderCellDef>Motivo</th>
+        <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Fecha</th>
+        <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-chip" [class]="statusClass(row.status)">{{ getStatusLabel(row.status) }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="reviewedBy">
+        <th mat-header-cell *matHeaderCellDef>Revisado por</th>
+        <td mat-cell *matCellDef="let row">{{ row.reviewedByName ?? '—' }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: historyColumns"></tr>
+    </table>
+  </div>
+</ng-template>
+
+<ng-template #loanHistoryTable let-rows="rows">
+  <div class="table-container">
+    <table mat-table [dataSource]="rows">
+      <ng-container matColumnDef="playerName">
+        <th mat-header-cell *matHeaderCellDef>Jugador</th>
+        <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Monto</th>
+        <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+      </ng-container>
+      <ng-container matColumnDef="reason">
+        <th mat-header-cell *matHeaderCellDef>Motivo</th>
+        <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Fecha</th>
+        <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-chip" [class]="statusClass(row.status)">{{ getStatusLabel(row.status) }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="reviewedBy">
+        <th mat-header-cell *matHeaderCellDef>Revisado por</th>
+        <td mat-cell *matCellDef="let row">{{ row.reviewedByName ?? '—' }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: historyColumns"></tr>
+    </table>
+  </div>
+</ng-template>

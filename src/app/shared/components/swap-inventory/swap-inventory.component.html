@@ -1,0 +1,82 @@
+<div class="inventory-panel">
+  <div class="inventory-header">
+    <mat-icon>inventory_2</mat-icon>
+    <div>
+      <strong>Inventario — swaps</strong>
+      <p>Armas y items extra que deben llevar en la bolsa por si hay que cambiar de rol o situación</p>
+    </div>
+  </div>
+
+  <div class="inventory-grid">
+    @for (slot of displaySlots; track $index) {
+      @if (slot) {
+        <div
+          class="inventory-cell filled"
+          [matTooltip]="tooltip(slot)"
+          matTooltipClass="swap-tooltip"
+        >
+          <img [src]="iconUrl(slot)" [alt]="slot.itemDisplayName" class="item-img" />
+          <span class="item-name">{{ slot.itemDisplayName }}</span>
+          @if (slot.note) {
+            <span class="item-note">{{ slot.note }}</span>
+          }
+          @if (editMode) {
+            <button
+              type="button"
+              class="remove-btn"
+              mat-icon-button
+              (click)="removeItem(slot.localId)"
+              aria-label="Quitar swap"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </div>
+      } @else if (editMode) {
+        <button type="button" class="inventory-cell empty" (click)="startAdd()">
+          <mat-icon>add</mat-icon>
+          <span class="slot-label">Agregar</span>
+        </button>
+      } @else {
+        <div class="inventory-cell empty readonly"></div>
+      }
+    }
+  </div>
+
+  @if (editMode && swapItems.length) {
+    <div class="notes-editor">
+      @for (item of swapItems; track item.localId) {
+        <mat-form-field appearance="outline" class="note-field">
+          <mat-label>Nota — {{ item.itemDisplayName }}</mat-label>
+          <input
+            matInput
+            [value]="item.note ?? ''"
+            placeholder="Ej: swap boss, anti-mage, backup offhand..."
+            (input)="updateNote(item, $any($event.target).value)"
+          />
+        </mat-form-field>
+      }
+    </div>
+  }
+
+  @if (editMode) {
+    <button mat-stroked-button type="button" class="add-btn" (click)="startAdd()">
+      <mat-icon>add</mat-icon> Agregar swap al inventario
+    </button>
+  }
+
+  @if (!editMode && !swapItems.length) {
+    <p class="empty-msg">Sin swaps configurados</p>
+  }
+</div>
+
+@if (adding && editMode) {
+  <div class="add-panel">
+    <app-item-search
+      label="Buscar item para inventario"
+      placeholder="Arma swap, armadura alternativa..."
+      (itemSelected)="onItemSelected($event)"
+    />
+    <button mat-button type="button" (click)="cancelAdd()">Cancelar</button>
+  </div>
+}

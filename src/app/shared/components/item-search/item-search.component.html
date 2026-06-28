@@ -1,0 +1,26 @@
+<div class="search-wrap">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ label }}</mat-label>
+    <input
+      matInput
+      [formControl]="searchControl"
+      [matAutocomplete]="auto"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+    />
+    <mat-icon matPrefix class="search-icon">search</mat-icon>
+    @if (selectedItem) {
+      <img matSuffix [src]="selectedItem.iconUrl" alt="" class="item-icon-selected" />
+    }
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onSelect($event.option.value)">
+      @for (item of results$ | async; track item.uniqueName) {
+        <mat-option [value]="item">
+          <div class="option-row">
+            <img [src]="item.iconUrl" alt="" class="item-icon" />
+            <span>{{ itemLabel(item) }}</span>
+          </div>
+        </mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+</div>

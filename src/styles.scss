@@ -1,0 +1,101 @@
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$orange-palette,
+        tertiary: mat.$green-palette,
+      ),
+      typography: (
+        plain-family: 'Inter, Roboto, sans-serif',
+        brand-family: 'Inter, Roboto, sans-serif',
+      ),
+      density: 0,
+    )
+  );
+}
+
+:root {
+  --bg-primary: #0a0c12;
+  --bg-secondary: #12151e;
+  --card-bg: #1a1e2a;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --gold: #d4af37;
+  --silver-green: #4caf50;
+}
+
+body {
+  color-scheme: dark;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  margin: 0;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.mat-mdc-snack-bar-container.app-snackbar {
+  margin-bottom: 1.25rem !important;
+
+  .mdc-snackbar__surface {
+    min-width: min(420px, calc(100vw - 2rem)) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  .mat-mdc-snack-bar-label {
+    color: var(--text-primary) !important;
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    color: var(--gold) !important;
+    font-weight: 600 !important;
+  }
+}
+
+.mat-mdc-snack-bar-container.snackbar-success .mdc-snackbar__surface {
+  background: #152418 !important;
+  border-color: rgba(76, 175, 80, 0.35) !important;
+}
+
+.mat-mdc-snack-bar-container.snackbar-error .mdc-snackbar__surface {
+  background: #2a1518 !important;
+  border-color: rgba(239, 83, 80, 0.4) !important;
+}
+
+.mat-mdc-snack-bar-container.snackbar-info .mdc-snackbar__surface {
+  background: #151d2a !important;
+  border-color: rgba(100, 181, 246, 0.35) !important;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+a {
+  color: var(--gold);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 3px;
+}

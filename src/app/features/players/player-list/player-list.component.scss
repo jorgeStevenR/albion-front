@@ -1,0 +1,62 @@
+@use '../../wallet/transactions/transactions.component.scss';
+
+.sync-form,
+.create-form {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .guild-name {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .hint {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  mat-form-field {
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .guild-search {
+    flex: 2;
+    min-width: 240px;
+  }
+
+  button mat-spinner {
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
+}
+
+.empty-message {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.active { color: var(--silver-green); }
+.inactive { color: #ef5350; }

@@ -1,0 +1,54 @@
+<div class="equipment-panel">
+  @if (editMode && slotData['MAINHAND']?.uniqueName) {
+    <p class="weapon-hint" [class.two-hand]="offhandBlocked">
+      <mat-icon>{{ offhandBlocked ? 'pan_tool' : 'back_hand' }}</mat-icon>
+      {{ offhandHint() }}
+    </p>
+  }
+
+  @for (row of gridRows; track $index) {
+    <div class="equipment-row">
+      @for (slot of row.slots; track $index) {
+        @if (slot) {
+          <div
+            class="equipment-cell"
+            [class.filled]="!!getItem(slot)"
+            [class.disabled]="isSlotDisabled(slot)"
+            [class.editing]="activeEditSlot === slot"
+            [matTooltip]="slotLabels[slot]"
+            (click)="toggleEdit(slot)"
+          >
+            @if (getItem(slot)?.iconUrl) {
+              <img [src]="getItem(slot)!.iconUrl" [alt]="getItem(slot)!.displayName" class="item-img" />
+              @if (!editMode) {
+                <span class="item-name">{{ getItem(slot)!.displayName }}</span>
+              }
+            } @else if (isSlotDisabled(slot)) {
+              <mat-icon class="slot-icon blocked">block</mat-icon>
+              <span class="slot-hint">2H</span>
+            } @else {
+              <mat-icon class="slot-icon">{{ slotIcons[slot] }}</mat-icon>
+            }
+            @if (editMode) {
+              <span class="slot-label">{{ slotLabels[slot] }}</span>
+            }
+          </div>
+        } @else {
+          <div class="equipment-cell spacer"></div>
+        }
+      }
+    </div>
+  }
+</div>
+
+@if (editMode && activeEditSlot) {
+  <div class="slot-editor">
+    <app-item-search
+      [label]="'Buscar item — ' + slotLabels[activeEditSlot]"
+      placeholder="Ej: casco soldado, chaqueta mercenario, martillo t8..."
+      [initialDisplayName]="getItem(activeEditSlot)?.displayName ?? ''"
+      [disabled]="isSlotDisabled(activeEditSlot)"
+      (itemSelected)="onItemSelected(activeEditSlot, $event)"
+    />
+  </div>
+}
