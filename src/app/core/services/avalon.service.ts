@@ -4,6 +4,7 @@ import { ApiService } from './api.service';
 import {
   AvalonRun,
   AvalonRunRequest,
+  AvalonMapsRequest,
   AvalonRolesOverview,
   ConfigureAvalonRolesRequest,
   DistributionCalculation,
@@ -34,6 +35,10 @@ export class AvalonService {
 
   addLoot(avalonId: number, request: LootItemRequest): Observable<AvalonRun> {
     return this.api.post<AvalonRun>(`/avalons/${avalonId}/loot`, request);
+  }
+
+  updateMaps(avalonId: number, request: AvalonMapsRequest): Observable<AvalonRun> {
+    return this.api.put<AvalonRun>(`/avalons/${avalonId}/maps`, request);
   }
 
   calculate(avalonId: number): Observable<DistributionCalculation> {

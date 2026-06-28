@@ -7,13 +7,16 @@
       [matAutocomplete]="auto"
       [placeholder]="placeholder"
       [disabled]="disabled"
+      (focus)="onFocus()"
     />
     <mat-icon matPrefix class="search-icon">search</mat-icon>
-    @if (selectedItem) {
+    @if (searching) {
+      <mat-spinner matSuffix diameter="20" />
+    } @else if (selectedItem) {
       <img matSuffix [src]="selectedItem.iconUrl" alt="" class="item-icon-selected" />
     }
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onSelect($event.option.value)">
-      @for (item of results$ | async; track item.uniqueName) {
+      @for (item of results; track item.uniqueName) {
         <mat-option [value]="item">
           <div class="option-row">
             <img [src]="item.iconUrl" alt="" class="item-icon" />
@@ -23,4 +26,7 @@
       }
     </mat-autocomplete>
   </mat-form-field>
+  @if (statusHint) {
+    <p class="status-hint">{{ statusHint }}</p>
+  }
 </div>

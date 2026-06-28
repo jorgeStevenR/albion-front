@@ -46,6 +46,7 @@
     <app-item-search
       [label]="'Buscar item — ' + slotLabels[activeEditSlot]"
       placeholder="Ej: casco soldado, chaqueta mercenario, martillo t8..."
+      [slot]="activeEditSlot"
       [initialDisplayName]="getItem(activeEditSlot)?.displayName ?? ''"
       [disabled]="isSlotDisabled(activeEditSlot)"
       (itemSelected)="onItemSelected(activeEditSlot, $event)"

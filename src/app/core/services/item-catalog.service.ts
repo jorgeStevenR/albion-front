@@ -6,6 +6,7 @@ import {
   EquipmentSlot,
   EquipmentSlotOption,
   FilterOption,
+  ItemCatalogStatus,
   ItemSearchParams,
 } from '../models/build-template.model';
 
@@ -21,6 +22,10 @@ export class ItemCatalogService {
     if (params.enchantment != null) query.set('enchantment', String(params.enchantment));
     query.set('limit', String(params.limit ?? 25));
     return this.api.get<AlbionItem[]>(`/items/search?${query.toString()}`);
+  }
+
+  getCatalogStatus(): Observable<ItemCatalogStatus> {
+    return this.api.get<ItemCatalogStatus>('/items/catalog-status');
   }
 
   getSlots(): Observable<EquipmentSlotOption[]> {

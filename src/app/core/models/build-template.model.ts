@@ -33,6 +33,12 @@ export interface ItemSearchParams {
   limit?: number;
 }
 
+export interface ItemCatalogStatus {
+  itemCount: number;
+  ready: boolean;
+  syncInProgress: boolean;
+}
+
 export interface FilterOption {
   value: number;
   label: string;

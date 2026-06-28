@@ -13,6 +13,8 @@ export interface AvalonRun {
   description?: string;
   status: AvalonStatus;
   registrationsOpen?: boolean;
+  mapsThrown?: number;
+  mapsCost?: number;
   participants?: AvalonParticipant[];
   lootItems?: LootItem[];
   createdByPlayerId?: number;
@@ -56,6 +58,11 @@ export interface LootItemRequest {
   type: LootType;
   quantity: number;
   marketValue: number;
+}
+
+export interface AvalonMapsRequest {
+  mapsThrown: number;
+  mapsCost: number;
 }
 
 export interface DistributionCalculation {

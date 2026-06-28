@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { PingTemplateService } from '../../../core/services/ping-template.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -17,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { finishLoading } from '../../../shared/utils/loading.util';
 
 @Component({
   selector: 'app-avalon-create',
@@ -44,6 +46,7 @@ export class AvalonCreateComponent implements OnInit {
   private readonly pingService = inject(PingTemplateService);
   private readonly router = inject(Router);
   private readonly notification = inject(NotificationService);
+  private readonly cdr = inject(ChangeDetectorRef);
   readonly isAdmin = inject(AuthService).isAdmin();
 
   loadingTemplates = true;
@@ -59,13 +62,11 @@ export class AvalonCreateComponent implements OnInit {
 
   ngOnInit(): void {
     this.form.controls.scheduledTime.setValue(this.defaultTimeOneHourAhead());
-    this.pingService.getActive().subscribe({
+    this.pingService.getActive().pipe(
+      finalize(() => finishLoading(this.cdr, () => (this.loadingTemplates = false))),
+    ).subscribe({
       next: (t) => {
-        this.templates = t;
-        this.loadingTemplates = false;
-      },
-      error: () => {
-        this.loadingTemplates = false;
+        this.templates = t ?? [];
       },
     });
   }

@@ -26,3 +26,9 @@
 .item-icon {
   flex-shrink: 0;
 }
+
+.status-hint {
+  margin: -0.25rem 0 0.75rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}

@@ -62,6 +62,7 @@ export class AvalonDetailComponent implements OnInit {
   calculating = false;
   closing = false;
   selling = false;
+  savingMaps = false;
   sellingLootId: number | null = null;
   avalon: AvalonRun | null = null;
   players: Player[] = [];
@@ -80,6 +81,11 @@ export class AvalonDetailComponent implements OnInit {
     type: ['ITEM' as LootType, Validators.required],
     quantity: [1, [Validators.required, Validators.min(1)]],
     marketValue: [0, [Validators.required, Validators.min(1)]],
+  });
+
+  mapsForm = this.fb.nonNullable.group({
+    mapsThrown: [0, [Validators.required, Validators.min(0)]],
+    mapsCost: [0, [Validators.required, Validators.min(0)]],
   });
 
   saleForm = this.fb.nonNullable.group({
@@ -110,6 +116,10 @@ export class AvalonDetailComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.avalon = data;
+        this.mapsForm.reset({
+          mapsThrown: data.mapsThrown ?? 0,
+          mapsCost: data.mapsCost ?? 0,
+        });
       },
     });
   }
@@ -158,6 +168,21 @@ export class AvalonDetailComponent implements OnInit {
     });
   }
 
+  saveMaps(): void {
+    if (!this.avalon || this.mapsForm.invalid) return;
+    this.savingMaps = true;
+    this.avalonService.updateMaps(this.avalon.id, this.mapsForm.getRawValue()).subscribe({
+      next: (updated) => {
+        this.avalon = updated;
+        this.savingMaps = false;
+        this.notification.success('Mapas registrados');
+      },
+      error: () => {
+        this.savingMaps = false;
+      },
+    });
+  }
+
   calculate(): void {
     if (!this.avalon) return;
     this.calculating = true;
@@ -188,17 +213,43 @@ export class AvalonDetailComponent implements OnInit {
     });
   }
 
-  getTotalLootValue(): number {
+  getBagGrossValue(): number {
     if (!this.avalon?.lootItems) return 0;
-    return this.avalon.lootItems.reduce((sum, item) => {
-      const total = item.marketValue * item.quantity;
-      return sum + total * 0.8;
-    }, 0);
+    return this.avalon.lootItems
+      .filter((i) => i.type === 'BAG')
+      .reduce((sum, item) => sum + item.marketValue * item.quantity, 0);
+  }
+
+  getChestGrossValue(): number {
+    if (!this.avalon?.lootItems) return 0;
+    return this.avalon.lootItems
+      .filter((i) => i.type === 'ITEM')
+      .reduce((sum, item) => sum + item.marketValue * item.quantity, 0);
+  }
+
+  getMapsCost(): number {
+    return this.avalon?.mapsCost ?? 0;
+  }
+
+  getBagNetValue(): number {
+    return Math.max(0, this.getBagGrossValue() - this.getMapsCost());
+  }
+
+  getChestNetValue(): number {
+    return this.getChestGrossValue() * 0.8;
+  }
+
+  getTotalLootValue(): number {
+    return this.getBagNetValue() + this.getChestNetValue();
+  }
+
+  getLootLineValue(item: LootItem): number {
+    const gross = item.marketValue * item.quantity;
+    return item.type === 'ITEM' ? gross * 0.8 : gross;
   }
 
   getRawLootValue(): number {
-    if (!this.avalon?.lootItems) return 0;
-    return this.avalon.lootItems.reduce((s, i) => s + i.marketValue * i.quantity, 0);
+    return this.getBagGrossValue() + this.getChestGrossValue();
   }
 
   saleStatusLabel(item: LootItem): string {
