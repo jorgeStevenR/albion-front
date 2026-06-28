@@ -52,6 +52,10 @@ export class AuthService {
     return this.hasRole('ADMIN');
   }
 
+  isCaller(): boolean {
+    return this.hasRole('CALLER');
+  }
+
   isCallerOrAdmin(): boolean {
     return this.hasRole('ADMIN', 'CALLER', 'OFFICER');
   }

@@ -71,6 +71,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'caller/penalties',
+        canActivate: [roleGuard('CALLER')],
+        loadComponent: () =>
+          import('./features/caller/caller-penalties/caller-penalties.component').then(
+            (m) => m.CallerPenaltiesComponent,
+          ),
+      },
+      {
         path: 'avalons/:id',
         loadComponent: () =>
           import('./features/avalons/avalon-detail/avalon-detail.component').then(

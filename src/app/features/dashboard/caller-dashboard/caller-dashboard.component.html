@@ -1,0 +1,118 @@
+<app-page-header
+  [title]="'Panel Caller — ' + callerName"
+  subtitle="Publica avalonianas y gestiona multas de tu gremio"
+>
+  <button mat-flat-button color="primary" (click)="goToCreate()">
+    <mat-icon>campaign</mat-icon>
+    Ping Ava
+  </button>
+</app-page-header>
+
+@if (loading) {
+  <app-loading-spinner message="Cargando panel de caller..." />
+} @else {
+  <div class="stats-grid">
+    <app-stat-card
+      icon="campaign"
+      label="Mis pings abiertos"
+      [value]="myOpenPings"
+      accent="gold"
+    />
+    <app-stat-card
+      icon="shield"
+      label="Avas activas (gremio)"
+      [value]="activeAvalons"
+      accent="blue"
+    />
+    <app-stat-card
+      icon="flag"
+      label="Avas terminadas"
+      [value]="finishedAvalons"
+      accent="green"
+    />
+  </div>
+
+  <div class="actions-row">
+    <a mat-stroked-button color="primary" routerLink="/avalons/create">
+      <mat-icon>add</mat-icon>
+      Crear avaloniana
+    </a>
+    <a mat-stroked-button routerLink="/avalons">
+      <mat-icon>shield</mat-icon>
+      Ver todas
+    </a>
+    <button mat-stroked-button (click)="goToPenalties()">
+      <mat-icon>gavel</mat-icon>
+      Multar jugadores
+    </button>
+  </div>
+
+  <mat-card class="section-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>person_pin</mat-icon>
+      <mat-card-title>Mis avalonianas</mat-card-title>
+      <mat-card-subtitle>Pings que tú has publicado</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @if (myAvalons.length === 0) {
+        <app-empty-state
+          icon="campaign"
+          title="Aún no has publicado ningún ping"
+          description="Crea una avaloniana para que el gremio se inscriba por roles."
+          actionLabel="Ping Ava"
+          (actionClick)="goToCreate()"
+        />
+      } @else {
+        <ul class="avalon-list">
+          @for (ava of myAvalons; track ava.id) {
+            <li>
+              <div>
+                <strong>{{ ava.zone }}</strong>
+                <span class="meta">{{ formatAvalonWhen(ava) }}</span>
+                <span class="status" [class.open]="ava.status === 'OPEN'" [class.finished]="ava.status === 'FINISHED'">
+                  {{ statusLabel(ava.status) }}
+                </span>
+              </div>
+              <div class="row-actions">
+                <a mat-stroked-button [routerLink]="['/avalons', ava.id]">Gestionar</a>
+                <a mat-flat-button color="warn" [routerLink]="['/avalons', ava.id]" [queryParams]="{ tab: 'penalties' }">
+                  Multas
+                </a>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (manageableAvalons.length) {
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>gavel</mat-icon>
+        <mat-card-title>Gestionar multas</mat-card-title>
+        <mat-card-subtitle>Avalonianas abiertas o terminadas donde puedes multar</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <ul class="avalon-list compact">
+          @for (ava of manageableAvalons; track ava.id) {
+            <li>
+              <div>
+                <strong>{{ ava.zone }}</strong>
+                <span class="meta">
+                  {{ formatAvalonWhen(ava) }}
+                  @if (ava.createdByName) {
+                    · {{ ava.createdByName }}
+                  }
+                </span>
+              </div>
+              <a mat-stroked-button [routerLink]="['/avalons', ava.id]" [queryParams]="{ tab: 'penalties' }">
+                Multar
+              </a>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  }
+}

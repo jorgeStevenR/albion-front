@@ -1,0 +1,117 @@
+<app-page-header
+  title="Multas"
+  subtitle="Multa o abona silver a jugadores en una avaloniana"
+></app-page-header>
+
+@if (loading) {
+  <app-loading-spinner message="Cargando avalonianas..." />
+} @else if (avalons.length === 0) {
+  <app-empty-state
+    icon="gavel"
+    title="No hay avalonianas activas"
+    description="Crea un ping o espera a que haya una avaloniana abierta o terminada para aplicar multas."
+    actionLabel="Ping Ava"
+    (actionClick)="goToCreate()"
+  />
+} @else {
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>gavel</mat-icon>
+      <mat-card-title>Aplicar multa rápida</mat-card-title>
+      <mat-card-subtitle>También puedes usar no-show, multa masiva y delegados dentro de cada avaloniana</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="penalty-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Avaloniana</mat-label>
+          <mat-select formControlName="avalonId">
+            @for (a of avalons; track a.id) {
+              <mat-option [value]="a.id">{{ avalonLabel(a) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Jugador</mat-label>
+          <mat-select formControlName="playerId">
+            @for (p of players; track p.id) {
+              <mat-option [value]="p.id">{{ p.albionName }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="direction">
+            <mat-option value="DEBIT">Multa (descuento)</mat-option>
+            <mat-option value="CREDIT">Abono</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Monto (silver)</mat-label>
+          <input matInput type="number" formControlName="amount" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Motivo</mat-label>
+          <textarea matInput rows="2" formControlName="reason"></textarea>
+        </mat-form-field>
+        <button mat-flat-button color="warn" type="submit" [disabled]="submitting || form.invalid">
+          Aplicar multa
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="list-card">
+    <mat-card-header>
+      <mat-card-title>Avalonianas para gestionar</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ul class="avalon-links">
+        @for (a of avalons; track a.id) {
+          <li>
+            <div>
+              <strong>{{ a.zone }}</strong>
+              <span>{{ avalonLabel(a) }}</span>
+            </div>
+            <a mat-stroked-button [routerLink]="['/avalons', a.id]" [queryParams]="{ tab: 'penalties' }">
+              Multas avanzadas
+            </a>
+          </li>
+        }
+      </ul>
+    </mat-card-content>
+  </mat-card>
+
+  @if (recentPenalties.length) {
+    <mat-card class="list-card">
+      <mat-card-header>
+        <mat-card-title>Multas recientes</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="recentPenalties" class="data-table">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Fecha</th>
+            <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="player">
+            <th mat-header-cell *matHeaderCellDef>Jugador</th>
+            <td mat-cell *matCellDef="let row">{{ row.playerName }}</td>
+          </ng-container>
+          <ng-container matColumnDef="avalon">
+            <th mat-header-cell *matHeaderCellDef>Avalon</th>
+            <td mat-cell *matCellDef="let row">{{ row.avalonZone }}</td>
+          </ng-container>
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Monto</th>
+            <td mat-cell *matCellDef="let row">{{ row.amount | currencySilver }}</td>
+          </ng-container>
+          <ng-container matColumnDef="direction">
+            <th mat-header-cell *matHeaderCellDef>Tipo</th>
+            <td mat-cell *matCellDef="let row">{{ directionLabel(row.direction) }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['date', 'player', 'avalon', 'amount', 'direction']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['date', 'player', 'avalon', 'amount', 'direction']"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  }
+}

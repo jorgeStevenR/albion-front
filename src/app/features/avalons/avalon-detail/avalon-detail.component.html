@@ -34,7 +34,7 @@
     </mat-card>
   </div>
 
-  <mat-tab-group animationDuration="200ms">
+  <mat-tab-group animationDuration="200ms" [selectedIndex]="initialTabIndex">
     <mat-tab label="Registro de roles">
       <div class="tab-content">
         <app-avalon-role-registration [avalonId]="avalon.id" [canManage]="canEdit" />

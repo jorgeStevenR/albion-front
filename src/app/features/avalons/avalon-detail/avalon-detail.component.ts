@@ -65,6 +65,7 @@ export class AvalonDetailComponent implements OnInit {
   sellingLootId: number | null = null;
   avalon: AvalonRun | null = null;
   players: Player[] = [];
+  initialTabIndex = 0;
 
   participantTypes: ParticipantType[] = ['PLAYER', 'SCOUT', 'GUILD'];
   lootTypes: LootType[] = ['BAG', 'ITEM'];
@@ -87,6 +88,11 @@ export class AvalonDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab === 'penalties') {
+      this.initialTabIndex = 3;
+    }
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loadAvalon(id);
 
