@@ -25,9 +25,18 @@
   @if (rolesOverview.roles.length === 0) {
     <p class="empty-roles">No hay puestos configurados para esta avalon. Un líder debe crearla desde una plantilla con roles.</p>
   } @else {
+  @if (expandedPanelId) {
+    <div class="panel-backdrop" (click)="expandedPanelId = null"></div>
+  }
+
   <div class="role-grid">
     @for (slot of rolesOverview.roles; track slot.slotKey) {
-      <mat-card class="role-card" [class.full]="slot.full" [class.mine]="isRegisteredIn(slot)">
+      <mat-card
+        class="role-card"
+        [class.full]="slot.full"
+        [class.mine]="isRegisteredIn(slot)"
+        [class.panel-expanded]="isSlotPanelExpanded(slot.slotKey)"
+      >
         <div class="role-header">
           <mat-icon>sports_martial_arts</mat-icon>
           <div>
@@ -49,7 +58,12 @@
         </div>
 
         @if (getBuildSlots(slot).length) {
-          <mat-expansion-panel class="build-panel">
+          <mat-expansion-panel
+            class="build-panel build-panel--overlay"
+            [expanded]="expandedPanelId === panelId(slot.slotKey, 'build')"
+            (opened)="onPanelOpened(panelId(slot.slotKey, 'build'))"
+            (closed)="onPanelClosed(panelId(slot.slotKey, 'build'))"
+          >
             <mat-expansion-panel-header>
               <mat-panel-title>Set de equipamiento</mat-panel-title>
             </mat-expansion-panel-header>
@@ -61,7 +75,12 @@
         }
 
         @if (slot.slotSwaps?.length) {
-          <mat-expansion-panel class="build-panel">
+          <mat-expansion-panel
+            class="build-panel build-panel--overlay"
+            [expanded]="expandedPanelId === panelId(slot.slotKey, 'swaps')"
+            (opened)="onPanelOpened(panelId(slot.slotKey, 'swaps'))"
+            (closed)="onPanelClosed(panelId(slot.slotKey, 'swaps'))"
+          >
             <mat-expansion-panel-header>
               <mat-panel-title>Inventario — swaps</mat-panel-title>
             </mat-expansion-panel-header>

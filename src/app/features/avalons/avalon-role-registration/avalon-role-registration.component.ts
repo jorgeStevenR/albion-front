@@ -42,8 +42,27 @@ export class AvalonRoleRegistrationComponent implements OnInit {
 
   loading = true;
   actionSlotKey: string | null = null;
+  expandedPanelId: string | null = null;
   rolesOverview: AvalonRolesOverview | null = null;
   readonly slotItemMap = slotItemMap;
+
+  panelId(slotKey: string, type: 'build' | 'swaps'): string {
+    return `${slotKey}-${type}`;
+  }
+
+  isSlotPanelExpanded(slotKey: string): boolean {
+    return this.expandedPanelId?.startsWith(`${slotKey}-`) ?? false;
+  }
+
+  onPanelOpened(panelId: string): void {
+    this.expandedPanelId = panelId;
+  }
+
+  onPanelClosed(panelId: string): void {
+    if (this.expandedPanelId === panelId) {
+      this.expandedPanelId = null;
+    }
+  }
 
   ngOnInit(): void {
     this.loadRoles();
