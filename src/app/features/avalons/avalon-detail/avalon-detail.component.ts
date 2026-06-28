@@ -9,7 +9,7 @@ import { PlayerService } from '../../../core/services/player.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { SaleService } from '../../../core/services/sale.service';
-import { AvalonRun, LootItem, LootType, ParticipantType } from '../../../core/models/avalon.model';
+import { AvalonRun, LootItem, ParticipantType } from '../../../core/models/avalon.model';
 import { Player } from '../../../core/models/player.model';
 import { CurrencySilverPipe } from '../../../shared/pipes/currency-silver.pipe';
 import { finishLoading } from '../../../shared/utils/loading.util';
@@ -69,18 +69,18 @@ export class AvalonDetailComponent implements OnInit {
   initialTabIndex = 0;
 
   participantTypes: ParticipantType[] = ['PLAYER', 'SCOUT', 'GUILD'];
-  lootTypes: LootType[] = ['BAG', 'ITEM'];
 
   participantForm = this.fb.nonNullable.group({
     playerId: [0, Validators.required],
     participantType: ['PLAYER' as ParticipantType, Validators.required],
   });
 
-  lootForm = this.fb.nonNullable.group({
-    name: ['', Validators.required],
-    type: ['ITEM' as LootType, Validators.required],
-    quantity: [1, [Validators.required, Validators.min(1)]],
-    marketValue: [0, [Validators.required, Validators.min(1)]],
+  bagForm = this.fb.nonNullable.group({
+    grossValue: [0, [Validators.required, Validators.min(0)]],
+  });
+
+  chestForm = this.fb.nonNullable.group({
+    grossValue: [0, [Validators.required, Validators.min(1)]],
   });
 
   mapsForm = this.fb.nonNullable.group({
@@ -120,6 +120,8 @@ export class AvalonDetailComponent implements OnInit {
           mapsThrown: data.mapsThrown ?? 0,
           mapsCost: data.mapsCost ?? 0,
         });
+        const bagItem = data.lootItems?.find((i) => i.type === 'BAG');
+        this.bagForm.reset({ grossValue: bagItem?.marketValue ?? 0 });
       },
     });
   }
@@ -157,13 +159,24 @@ export class AvalonDetailComponent implements OnInit {
     });
   }
 
-  addLoot(): void {
-    if (!this.avalon || this.lootForm.invalid) return;
-    this.avalonService.addLoot(this.avalon.id, this.lootForm.getRawValue()).subscribe({
+  saveBags(): void {
+    if (!this.avalon || this.bagForm.invalid) return;
+    this.avalonService.setBagGross(this.avalon.id, this.bagForm.controls.grossValue.value).subscribe({
       next: (updated) => {
         this.avalon = updated;
-        this.lootForm.reset({ name: '', type: 'ITEM', quantity: 1, marketValue: 0 });
-        this.notification.success('Loot agregado');
+        this.notification.success('Valor de bolsas guardado');
+      },
+    });
+  }
+
+  addChest(): void {
+    if (!this.avalon || this.chestForm.invalid) return;
+    const grossValue = this.chestForm.controls.grossValue.value;
+    this.avalonService.addChest(this.avalon.id, grossValue).subscribe({
+      next: (updated) => {
+        this.avalon = updated;
+        this.chestForm.reset({ grossValue: 0 });
+        this.notification.success('Cofre agregado — 20% gremio al repartir');
       },
     });
   }

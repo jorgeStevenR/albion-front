@@ -2,6 +2,10 @@
   <app-loading-spinner message="Cargando multas..." />
 } @else {
   @if (canManage) {
+    <p class="caller-notice">
+      <mat-icon>record_voice_over</mat-icon>
+      Solo el caller (creador del ping) puede aplicar multas en esta avaloniana.
+    </p>
     <div class="penalty-forms">
       <mat-card class="form-card">
         <mat-card-header>
@@ -19,7 +23,9 @@
               <mat-label>No asistió</mat-label>
               <mat-select formControlName="noShowPlayerId">
                 @for (p of registeredPlayers; track p.playerId) {
-                  <mat-option [value]="p.playerId">{{ p.albionName }}</mat-option>
+                  <mat-option [value]="p.playerId">
+                    {{ p.albionName }}@if (p.slotDisplayName) { — {{ p.slotDisplayName }}}
+                  </mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -79,6 +85,10 @@
             <mat-icon>tune</mat-icon>
             Ajuste individual
           </mat-card-title>
+          <mat-card-subtitle>
+            Suma o resta plata manualmente a la wallet de un jugador por esta avaloniana
+            (ej. compensación extra, error en multa, premio puntual). No reemplaza al reparto de loot.
+          </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <form class="inline-form" [formGroup]="manualForm" (ngSubmit)="applyManual()">
@@ -112,43 +122,11 @@
         </mat-card-content>
       </mat-card>
 
-      @if (canManageDelegates) {
-        <mat-card class="form-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>supervisor_account</mat-icon>
-              Delegados del ping
-            </mat-card-title>
-            <mat-card-subtitle>
-              Personas que pueden aplicar multas en esta avaloniana
-            </mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <form class="inline-form" [formGroup]="delegateForm" (ngSubmit)="assignDelegate()">
-              <mat-form-field appearance="outline">
-                <mat-label>Jugador</mat-label>
-                <mat-select formControlName="playerId">
-                  @for (p of allPlayers; track p.id) {
-                    <mat-option [value]="p.id">{{ p.albionName }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <button mat-stroked-button type="submit">Asignar</button>
-            </form>
-            <div class="delegate-chips">
-              @for (d of delegates; track d.id) {
-                <mat-chip (removed)="removeDelegate(d.playerId)">
-                  {{ d.playerName }}
-                  <button matChipRemove><mat-icon>cancel</mat-icon></button>
-                </mat-chip>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
     </div>
 
     <mat-divider />
+  } @else {
+    <p class="empty">Solo el caller del ping puede gestionar multas aquí.</p>
   }
 
   <h3 class="section-title">Historial de multas y ajustes</h3>

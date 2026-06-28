@@ -16,6 +16,38 @@
     font-size: 0.85rem;
     color: var(--text-secondary);
   }
+
+  .registration-count {
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+    color: var(--gold);
+
+    strong {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.registered-summary {
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+
+  h4 {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+  }
 }
 
 .role-grid {

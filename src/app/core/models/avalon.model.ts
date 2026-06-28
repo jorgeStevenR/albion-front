@@ -15,6 +15,8 @@ export interface AvalonRun {
   registrationsOpen?: boolean;
   mapsThrown?: number;
   mapsCost?: number;
+  registeredCount?: number;
+  totalCapacity?: number;
   participants?: AvalonParticipant[];
   lootItems?: LootItem[];
   createdByPlayerId?: number;
@@ -33,6 +35,8 @@ export interface AvalonParticipant {
   playerId: number;
   albionName: string;
   participantType: ParticipantType;
+  roleSlotKey?: string;
+  roleDisplayName?: string;
 }
 
 export type LootSaleStatus = 'UNSOLD' | 'SOLD' | 'NOT_APPLICABLE';
@@ -84,6 +88,16 @@ export interface AvalonRolePlayer {
   registrationId: number;
   playerId: number;
   albionName: string;
+  slotKey?: string;
+  slotDisplayName?: string;
+}
+
+export interface RegisteredPlayerSummary {
+  registrationId: number;
+  playerId: number;
+  albionName: string;
+  slotKey: string;
+  slotDisplayName: string;
 }
 
 export interface AvalonRoleSlot {
@@ -106,6 +120,9 @@ export interface AvalonRolesOverview {
   avalonId: number;
   registrationsOpen: boolean;
   avalonOpen: boolean;
+  totalRegistered?: number;
+  totalCapacity?: number;
+  registeredPlayers?: RegisteredPlayerSummary[];
   roles: AvalonRoleSlot[];
 }
 

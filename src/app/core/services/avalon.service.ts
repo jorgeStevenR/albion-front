@@ -37,6 +37,14 @@ export class AvalonService {
     return this.api.post<AvalonRun>(`/avalons/${avalonId}/loot`, request);
   }
 
+  setBagGross(avalonId: number, grossValue: number): Observable<AvalonRun> {
+    return this.api.put<AvalonRun>(`/avalons/${avalonId}/loot/bags`, { grossValue });
+  }
+
+  addChest(avalonId: number, grossValue: number): Observable<AvalonRun> {
+    return this.api.post<AvalonRun>(`/avalons/${avalonId}/loot/chests`, { grossValue });
+  }
+
   updateMaps(avalonId: number, request: AvalonMapsRequest): Observable<AvalonRun> {
     return this.api.put<AvalonRun>(`/avalons/${avalonId}/maps`, request);
   }

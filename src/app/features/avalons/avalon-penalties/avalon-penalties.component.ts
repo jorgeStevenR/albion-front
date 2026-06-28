@@ -7,7 +7,7 @@ import { PlayerService } from '../../../core/services/player.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AvalonDelegate, AvalonPenalty, PenaltyDirection } from '../../../core/models/penalty.model';
-import { AvalonRolePlayer } from '../../../core/models/avalon.model';
+import { RegisteredPlayerSummary } from '../../../core/models/avalon.model';
 import { Player } from '../../../core/models/player.model';
 import { finishLoading } from '../../../shared/utils/loading.util';
 import { CurrencySilverPipe } from '../../../shared/pipes/currency-silver.pipe';
@@ -62,7 +62,7 @@ export class AvalonPenaltiesComponent implements OnInit {
   canManageDelegates = false;
   penalties: AvalonPenalty[] = [];
   delegates: AvalonDelegate[] = [];
-  registeredPlayers: AvalonRolePlayer[] = [];
+  registeredPlayers: RegisteredPlayerSummary[] = [];
   allPlayers: Player[] = [];
 
   noShowForm = this.fb.nonNullable.group({
@@ -104,7 +104,15 @@ export class AvalonPenaltiesComponent implements OnInit {
       next: ({ penalties, canManage, roles }) => {
         this.penalties = penalties;
         this.canManage = canManage.canManage;
-        this.registeredPlayers = roles.roles.flatMap((r) => r.players);
+        this.registeredPlayers = roles.registeredPlayers?.length
+          ? roles.registeredPlayers
+          : roles.roles.flatMap((r) => r.players.map((p) => ({
+              registrationId: p.registrationId,
+              playerId: p.playerId,
+              albionName: p.albionName,
+              slotKey: p.slotKey ?? r.slotKey,
+              slotDisplayName: p.slotDisplayName ?? r.displayName,
+            })));
         this.canManageDelegates = this.auth.isOfficerOrAdmin()
           || this.auth.getCurrentUser()?.playerId === this.createdByPlayerId;
 

@@ -13,6 +13,12 @@
           Elige tu puesto — cada uno tiene su set de equipamiento
         }
       </p>
+      @if (rolesOverview.totalCapacity) {
+        <p class="registration-count">
+          <strong>{{ rolesOverview.totalRegistered ?? 0 }}</strong>
+          de {{ rolesOverview.totalCapacity }} inscritos
+        </p>
+      }
     </div>
     @if (canManage && rolesOverview.avalonOpen) {
       <button mat-stroked-button (click)="toggleRegistrations()">
@@ -21,6 +27,17 @@
       </button>
     }
   </div>
+
+  @if (rolesOverview.registeredPlayers?.length) {
+    <div class="registered-summary">
+      <h4>Inscritos</h4>
+      <ul>
+        @for (p of rolesOverview.registeredPlayers; track p.registrationId) {
+          <li><strong>{{ p.albionName }}</strong> — {{ p.slotDisplayName || p.slotKey }}</li>
+        }
+      </ul>
+    </div>
+  }
 
   @if (rolesOverview.roles.length === 0) {
     <p class="empty-roles">No hay puestos configurados para esta avalon. Un líder debe crearla desde una plantilla con roles.</p>

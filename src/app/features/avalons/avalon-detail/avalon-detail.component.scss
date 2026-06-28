@@ -38,6 +38,32 @@
   padding: 1rem 0;
 }
 
+.loot-section-title {
+  width: 100%;
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.participants-summary {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--gold);
+}
+
+.tab-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.empty-tab {
+  margin: 1rem 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 .maps-form {
   align-items: flex-start;
   padding-bottom: 0;

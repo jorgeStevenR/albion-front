@@ -58,8 +58,15 @@
     </mat-tab>
 
     <mat-tab label="Participantes">
-      @if (canEdit && avalon.status === 'OPEN') {
-        <form class="inline-form" [formGroup]="participantForm" (ngSubmit)="addParticipant()">
+      <div class="tab-content">
+        @if (avalon.registeredCount != null && avalon.totalCapacity) {
+          <p class="participants-summary">
+            <strong>{{ avalon.registeredCount }}</strong> de {{ avalon.totalCapacity }} inscritos
+          </p>
+        }
+        @if (canEdit && avalon.status === 'OPEN') {
+          <p class="tab-hint">Los jugadores aparecen aquí al inscribirse en un rol. Solo agrega manualmente scouts o casos especiales.</p>
+          <form class="inline-form" [formGroup]="participantForm" (ngSubmit)="addParticipant()">
           <mat-form-field appearance="outline">
             <mat-label>Jugador</mat-label>
             <mat-select formControlName="playerId">
@@ -78,22 +85,31 @@
           </mat-form-field>
           <button mat-stroked-button type="submit">Agregar</button>
         </form>
-      }
+        }
       <table mat-table [dataSource]="avalon.participants ?? []" class="data-table">
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Jugador</th>
           <td mat-cell *matCellDef="let row">{{ row.albionName }}</td>
         </ng-container>
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Rol</th>
+          <td mat-cell *matCellDef="let row">{{ row.roleDisplayName || row.roleSlotKey || '—' }}</td>
+        </ng-container>
         <ng-container matColumnDef="type">
           <th mat-header-cell *matHeaderCellDef>Tipo</th>
           <td mat-cell *matCellDef="let row">{{ row.participantType }}</td>
         </ng-container>
-        <tr mat-header-row *matHeaderRowDef="['name', 'type']"></tr>
-        <tr mat-row *matRowDef="let row; columns: ['name', 'type']"></tr>
+        <tr mat-header-row *matHeaderRowDef="['name', 'role', 'type']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['name', 'role', 'type']"></tr>
       </table>
+      @if (!(avalon.participants?.length)) {
+        <p class="empty-tab">Nadie inscrito aún — comparte el ping para que eligen rol.</p>
+      }
+      </div>
     </mat-tab>
 
     <mat-tab label="Loot">
+      <div class="tab-content">
       @if (canEdit && avalon.status === 'OPEN') {
         <form class="maps-form" [formGroup]="mapsForm" (ngSubmit)="saveMaps()">
           <p class="maps-hint">
@@ -112,28 +128,23 @@
             Guardar mapas
           </button>
         </form>
-        <form class="loot-form" [formGroup]="lootForm" (ngSubmit)="addLoot()">
+
+        <form class="loot-form" [formGroup]="bagForm" (ngSubmit)="saveBags()">
+          <h4 class="loot-section-title">Bolsas (valor bruto total)</h4>
           <mat-form-field appearance="outline">
-            <mat-label>Nombre</mat-label>
-            <input matInput formControlName="name" />
+            <mat-label>Valor total bolsas</mat-label>
+            <input matInput type="number" formControlName="grossValue" min="0" />
           </mat-form-field>
+          <button mat-stroked-button type="submit" [disabled]="bagForm.invalid">Guardar bolsas</button>
+        </form>
+
+        <form class="loot-form" [formGroup]="chestForm" (ngSubmit)="addChest()">
+          <h4 class="loot-section-title">Cofres (valor bruto — se aplica 20% gremio al repartir)</h4>
           <mat-form-field appearance="outline">
-            <mat-label>Tipo</mat-label>
-            <mat-select formControlName="type">
-              @for (t of lootTypes; track t) {
-                <mat-option [value]="t">{{ t }}</mat-option>
-              }
-            </mat-select>
+            <mat-label>Valor bruto del cofre</mat-label>
+            <input matInput type="number" formControlName="grossValue" min="1" />
           </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Cantidad</mat-label>
-            <input matInput type="number" formControlName="quantity" />
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Valor mercado</mat-label>
-            <input matInput type="number" formControlName="marketValue" />
-          </mat-form-field>
-          <button mat-stroked-button type="submit">Agregar loot</button>
+          <button mat-stroked-button type="submit" [disabled]="chestForm.invalid">Agregar cofre</button>
         </form>
       }
       <table mat-table [dataSource]="avalon.lootItems ?? []" class="data-table">
@@ -153,7 +164,9 @@
           <th mat-header-cell *matHeaderCellDef>Valor efectivo</th>
           <td mat-cell *matCellDef="let row">
             {{ getLootLineValue(row) | currencySilver }}
-            @if (row.type === 'BAG' && getMapsCost() > 0) {
+            @if (row.type === 'ITEM') {
+              <span class="value-note">neto (80%)</span>
+            } @else if (row.type === 'BAG' && getMapsCost() > 0) {
               <span class="value-note">bruto</span>
             }
           </td>
@@ -195,6 +208,7 @@
           <button mat-button type="button" (click)="sellingLootId = null">Cancelar</button>
         </form>
       }
+      </div>
     </mat-tab>
 
     <mat-tab label="Multas y cierre">
