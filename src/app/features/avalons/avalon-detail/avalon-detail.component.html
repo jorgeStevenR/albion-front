@@ -19,9 +19,19 @@
     }
   </app-page-header>
 
+  @if (countdown && avalon.status === 'OPEN') {
+    <div class="countdown-banner" [class.started]="countdown.started">
+      <mat-icon>{{ countdown.started ? 'notifications_active' : 'schedule' }}</mat-icon>
+      <div>
+        <strong>{{ countdown.label }}</strong>
+        <span>para el ping</span>
+      </div>
+    </div>
+  }
+
   <div class="summary-cards">
     <mat-card class="summary-card">
-      <span class="label">Bolsas (bruto)</span>
+      <span class="label">Bolsitas piso (bruto)</span>
       <strong>{{ getBagGrossValue() | currencySilver }}</strong>
     </mat-card>
     @if (getMapsCost() > 0) {
@@ -109,12 +119,43 @@
     </mat-tab>
 
     <mat-tab label="Loot">
-      <div class="tab-content">
-      @if (canEdit && avalon.status === 'OPEN') {
+      <div class="tab-content loot-tab">
+      @if (canManageLoot && avalon.status === 'OPEN') {
+        <p class="loot-intro">
+          Registra el loot por <strong>bolsitas del piso</strong> (valor bruto total) y cada <strong>cofre</strong> por separado.
+          En cofres se descuenta 20% gremio al repartir (100M → 80M netos).
+        </p>
+
+        <mat-card class="loot-entry-card">
+          <h4><mat-icon>shopping_bag</mat-icon> Bolsitas del piso</h4>
+          <p class="loot-hint">Suma todo lo que salió en bolsas en el suelo — un solo valor bruto.</p>
+          <form class="loot-form" [formGroup]="bagForm" (ngSubmit)="saveBags()">
+            <mat-form-field appearance="outline">
+              <mat-label>Valor bruto bolsitas del piso</mat-label>
+              <input matInput type="number" formControlName="grossValue" min="0" />
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit" [disabled]="bagForm.invalid">
+              Guardar bolsitas
+            </button>
+          </form>
+        </mat-card>
+
+        <mat-card class="loot-entry-card">
+          <h4><mat-icon>inventory_2</mat-icon> Cofres</h4>
+          <p class="loot-hint">Agrega un cofre cada vez que llenen uno — valor bruto de mercado.</p>
+          <form class="loot-form" [formGroup]="chestForm" (ngSubmit)="addChest()">
+            <mat-form-field appearance="outline">
+              <mat-label>Valor bruto del cofre</mat-label>
+              <input matInput type="number" formControlName="grossValue" min="1" />
+            </mat-form-field>
+            <button mat-stroked-button type="submit" [disabled]="chestForm.invalid">+ Agregar cofre</button>
+          </form>
+        </mat-card>
+
         <form class="maps-form" [formGroup]="mapsForm" (ngSubmit)="saveMaps()">
           <p class="maps-hint">
             <mat-icon>map</mat-icon>
-            Registra los mapas que se lanzaron — se descuentan del total de bolsas antes del reparto.
+            Mapas lanzados — se descuentan de las bolsitas del piso antes del reparto.
           </p>
           <mat-form-field appearance="outline">
             <mat-label>Cantidad de mapas</mat-label>
@@ -128,37 +169,23 @@
             Guardar mapas
           </button>
         </form>
+      }
 
-        <form class="loot-form" [formGroup]="bagForm" (ngSubmit)="saveBags()">
-          <h4 class="loot-section-title">Bolsas (valor bruto total)</h4>
-          <mat-form-field appearance="outline">
-            <mat-label>Valor total bolsas</mat-label>
-            <input matInput type="number" formControlName="grossValue" min="0" />
-          </mat-form-field>
-          <button mat-stroked-button type="submit" [disabled]="bagForm.invalid">Guardar bolsas</button>
-        </form>
-
-        <form class="loot-form" [formGroup]="chestForm" (ngSubmit)="addChest()">
-          <h4 class="loot-section-title">Cofres (valor bruto — se aplica 20% gremio al repartir)</h4>
-          <mat-form-field appearance="outline">
-            <mat-label>Valor bruto del cofre</mat-label>
-            <input matInput type="number" formControlName="grossValue" min="1" />
-          </mat-form-field>
-          <button mat-stroked-button type="submit" [disabled]="chestForm.invalid">Agregar cofre</button>
-        </form>
+      @if (getBagLootItems().length || getChestLootItems().length) {
+        <h4 class="loot-list-title">Registrado</h4>
       }
       <table mat-table [dataSource]="avalon.lootItems ?? []" class="data-table">
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Item</th>
+          <th mat-header-cell *matHeaderCellDef>Concepto</th>
           <td mat-cell *matCellDef="let row">{{ row.name }}</td>
         </ng-container>
         <ng-container matColumnDef="type">
           <th mat-header-cell *matHeaderCellDef>Tipo</th>
-          <td mat-cell *matCellDef="let row">{{ row.type }}</td>
+          <td mat-cell *matCellDef="let row">{{ getLootTypeLabel(row) }}</td>
         </ng-container>
-        <ng-container matColumnDef="qty">
-          <th mat-header-cell *matHeaderCellDef>Cant.</th>
-          <td mat-cell *matCellDef="let row">{{ row.quantity }}</td>
+        <ng-container matColumnDef="gross">
+          <th mat-header-cell *matHeaderCellDef>Bruto</th>
+          <td mat-cell *matCellDef="let row">{{ row.marketValue * row.quantity | currencySilver }}</td>
         </ng-container>
         <ng-container matColumnDef="value">
           <th mat-header-cell *matHeaderCellDef>Valor efectivo</th>
@@ -187,9 +214,12 @@
             }
           </td>
         </ng-container>
-        <tr mat-header-row *matHeaderRowDef="['name', 'type', 'qty', 'value', 'saleStatus', 'actions']"></tr>
-        <tr mat-row *matRowDef="let row; columns: ['name', 'type', 'qty', 'value', 'saleStatus', 'actions']"></tr>
+        <tr mat-header-row *matHeaderRowDef="['name', 'type', 'gross', 'value', 'saleStatus', 'actions']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['name', 'type', 'gross', 'value', 'saleStatus', 'actions']"></tr>
       </table>
+      @if (!(avalon.lootItems?.length)) {
+        <p class="empty-tab">Aún no hay loot registrado.</p>
+      }
       @if (sellingLootId) {
         <form class="sale-form" [formGroup]="saleForm" (ngSubmit)="confirmSell()">
           <mat-form-field appearance="outline">

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -14,6 +14,7 @@ import { AvalonRun, Distribution } from '../../../core/models/avalon.model';
 import { BalanceResponse } from '../../../core/models/wallet.model';
 import { CurrencySilverPipe } from '../../../shared/pipes/currency-silver.pipe';
 import { finishLoading } from '../../../shared/utils/loading.util';
+import { getAvalonCountdown } from '../../../shared/utils/avalon-countdown.util';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +22,7 @@ import { MatButtonModule } from '@angular/material/button';
 interface OpenAvalonCard extends AvalonRun {
   isRegistered: boolean;
   registeredRole?: string;
+  countdownLabel?: string;
 }
 
 @Component({
@@ -41,7 +43,7 @@ interface OpenAvalonCard extends AvalonRun {
   templateUrl: './player-dashboard.component.html',
   styleUrl: './player-dashboard.component.scss',
 })
-export class PlayerDashboardComponent implements OnInit {
+export class PlayerDashboardComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly walletService = inject(WalletService);
   private readonly avalonService = inject(AvalonService);
@@ -56,6 +58,7 @@ export class PlayerDashboardComponent implements OnInit {
   avalonParticipations = 0;
   openAvalons: OpenAvalonCard[] = [];
   recentDistributions: Distribution[] = [];
+  private countdownTimer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     const user = this.auth.getCurrentUser();
@@ -99,6 +102,12 @@ export class PlayerDashboardComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+    }
+  }
+
   private loadOpenAvalons(avalons: AvalonRun[], playerId: number): void {
     const open = avalons
       .filter((a) => a.status === 'OPEN' && a.registrationsOpen !== false)
@@ -120,14 +129,28 @@ export class PlayerDashboardComponent implements OnInit {
               ...ava,
               isRegistered: !!mySlot || !!mySummary,
               registeredRole: mySlot?.displayName ?? mySummary?.slotDisplayName,
+              countdownLabel: getAvalonCountdown(ava.scheduledAt)?.label,
             } satisfies OpenAvalonCard;
           }),
         ),
       ),
     ).subscribe((cards) => {
       this.openAvalons = cards;
+      this.refreshCountdowns();
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+      }
+      this.countdownTimer = setInterval(() => this.refreshCountdowns(), 60_000);
       this.cdr.markForCheck();
     });
+  }
+
+  private refreshCountdowns(): void {
+    this.openAvalons = this.openAvalons.map((ava) => ({
+      ...ava,
+      countdownLabel: getAvalonCountdown(ava.scheduledAt)?.label,
+    }));
+    this.cdr.markForCheck();
   }
 
   private avalonTime(a: AvalonRun): number {

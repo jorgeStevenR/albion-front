@@ -60,6 +60,9 @@
               <div class="ava-info">
                 <strong>{{ ava.zone }}</strong>
                 <span class="ava-time">{{ formatAvalonWhen(ava) }}</span>
+                @if (ava.countdownLabel) {
+                  <span class="ava-countdown">{{ ava.countdownLabel }}</span>
+                }
                 @if (ava.createdByName) {
                   <span class="ava-caller">Caller: {{ ava.createdByName }}</span>
                 }

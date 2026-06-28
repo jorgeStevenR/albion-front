@@ -35,6 +35,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'guild/balance',
+        canActivate: [roleGuard('ADMIN', 'OFFICER')],
+        loadComponent: () =>
+          import('./features/wallet/guild-balance/guild-balance.component').then(
+            (m) => m.GuildBalanceComponent,
+          ),
+      },
+      {
         path: 'wallet/transactions',
         loadComponent: () =>
           import('./features/wallet/transactions/transactions.component').then(

@@ -55,8 +55,8 @@ export class MainLayoutComponent {
     { label: 'Avalonianas', icon: 'shield', route: '/avalons', exact: true },
     { label: 'Multas', icon: 'gavel', route: '/caller/penalties', roles: ['CALLER'], exact: true },
     { label: 'Multas', icon: 'gavel', route: '/admin/penalties', roles: ['ADMIN'], exact: true },
-    { label: 'Mi Balance', icon: 'account_balance_wallet', route: '/wallet', roles: ['CALLER', 'PLAYER'], exact: true },
-    { label: 'Balance Gremial', icon: 'account_balance', route: '/wallet', roles: ['ADMIN', 'OFFICER'], exact: true },
+    { label: 'Mi Balance', icon: 'account_balance_wallet', route: '/wallet', roles: ['CALLER', 'PLAYER', 'ADMIN', 'OFFICER'], exact: true },
+    { label: 'Balance Gremial', icon: 'account_balance', route: '/guild/balance', roles: ['ADMIN', 'OFFICER'], exact: true },
     { label: 'Mis multas', icon: 'gavel', route: '/wallet/penalties', roles: ['PLAYER'], exact: true },
     { label: 'Movimientos', icon: 'swap_horiz', route: '/wallet/transactions', roles: ['ADMIN', 'OFFICER'], exact: true },
     { label: 'Solicitudes', icon: 'payments', route: '/withdrawals', roles: ['PLAYER', 'CALLER', 'OFFICER'], exact: true },
@@ -73,6 +73,10 @@ export class MainLayoutComponent {
 
   isExactRoute(item: NavItem): boolean {
     return item.exact !== false;
+  }
+
+  canViewGuildBalance(): boolean {
+    return this.auth.canViewGuildBalance();
   }
 
   getRoleLabel(): string {

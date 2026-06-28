@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -24,6 +24,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { AvalonRoleRegistrationComponent } from '../avalon-role-registration/avalon-role-registration.component';
 import { AvalonPenaltiesComponent } from '../avalon-penalties/avalon-penalties.component';
+import { AvalonCountdown, getAvalonCountdown } from '../../../shared/utils/avalon-countdown.util';
 
 @Component({
   selector: 'app-avalon-detail',
@@ -48,7 +49,7 @@ import { AvalonPenaltiesComponent } from '../avalon-penalties/avalon-penalties.c
   templateUrl: './avalon-detail.component.html',
   styleUrl: './avalon-detail.component.scss',
 })
-export class AvalonDetailComponent implements OnInit {
+export class AvalonDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   private readonly avalonService = inject(AvalonService);
@@ -57,6 +58,7 @@ export class AvalonDetailComponent implements OnInit {
   private readonly saleService = inject(SaleService);
   private readonly cdr = inject(ChangeDetectorRef);
   readonly canEdit = inject(AuthService).isOfficerOrAdmin();
+  private readonly auth = inject(AuthService);
 
   loading = true;
   calculating = false;
@@ -65,6 +67,8 @@ export class AvalonDetailComponent implements OnInit {
   savingMaps = false;
   sellingLootId: number | null = null;
   avalon: AvalonRun | null = null;
+  countdown: AvalonCountdown | null = null;
+  private countdownTimer: ReturnType<typeof setInterval> | null = null;
   players: Player[] = [];
   initialTabIndex = 0;
 
@@ -109,6 +113,10 @@ export class AvalonDetailComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.stopCountdown();
+  }
+
   loadAvalon(id: number): void {
     this.loading = true;
     this.avalonService.getById(id).pipe(
@@ -122,8 +130,36 @@ export class AvalonDetailComponent implements OnInit {
         });
         const bagItem = data.lootItems?.find((i) => i.type === 'BAG');
         this.bagForm.reset({ grossValue: bagItem?.marketValue ?? 0 });
+        this.startCountdown();
       },
     });
+  }
+
+  private startCountdown(): void {
+    this.stopCountdown();
+    this.updateCountdown();
+    if (!this.avalon?.scheduledAt) {
+      return;
+    }
+    this.countdownTimer = setInterval(() => this.updateCountdown(), 60_000);
+  }
+
+  private stopCountdown(): void {
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
+    }
+  }
+
+  private updateCountdown(): void {
+    this.countdown = getAvalonCountdown(this.avalon?.scheduledAt);
+    this.cdr.markForCheck();
+  }
+
+  get canManageLoot(): boolean {
+    if (this.canEdit) return true;
+    const user = this.auth.getCurrentUser();
+    return !!user && user.playerId === this.avalon?.createdByPlayerId;
   }
 
   getAvalonSubtitle(): string {
@@ -164,7 +200,7 @@ export class AvalonDetailComponent implements OnInit {
     this.avalonService.setBagGross(this.avalon.id, this.bagForm.controls.grossValue.value).subscribe({
       next: (updated) => {
         this.avalon = updated;
-        this.notification.success('Valor de bolsas guardado');
+        this.notification.success('Bolsitas del piso guardadas');
       },
     });
   }
@@ -224,6 +260,18 @@ export class AvalonDetailComponent implements OnInit {
         this.closing = false;
       },
     });
+  }
+
+  getChestLootItems(): LootItem[] {
+    return this.avalon?.lootItems?.filter((i) => i.type === 'ITEM') ?? [];
+  }
+
+  getBagLootItems(): LootItem[] {
+    return this.avalon?.lootItems?.filter((i) => i.type === 'BAG') ?? [];
+  }
+
+  getLootTypeLabel(item: LootItem): string {
+    return item.type === 'BAG' ? 'Bolsita piso' : 'Cofre';
   }
 
   getBagGrossValue(): number {

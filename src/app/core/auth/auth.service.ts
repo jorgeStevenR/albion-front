@@ -65,6 +65,10 @@ export class AuthService {
     return this.isCallerOrAdmin();
   }
 
+  canViewGuildBalance(): boolean {
+    return this.hasRole('ADMIN', 'OFFICER');
+  }
+
   private loadUser(): AuthUser | null {
     const raw = localStorage.getItem(AUTH_KEY);
     if (!raw) return null;

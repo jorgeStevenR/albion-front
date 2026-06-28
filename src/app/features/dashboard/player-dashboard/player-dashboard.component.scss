@@ -40,6 +40,17 @@
     margin-top: 0.15rem;
   }
 
+  .ava-countdown {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gold);
+    background: rgba(212, 175, 55, 0.12);
+  }
+
   .ava-caller {
     display: block;
     font-size: 0.8rem;
