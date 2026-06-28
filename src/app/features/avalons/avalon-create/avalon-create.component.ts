@@ -156,7 +156,14 @@ export class AvalonCreateComponent implements OnInit {
     const [hours, minutes] = time.split(':').map(Number);
     if (Number.isNaN(hours) || Number.isNaN(minutes)) return undefined;
     base.setHours(hours, minutes, 0, 0);
+
     const pad = (n: number) => String(n).padStart(2, '0');
-    return `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}T${pad(base.getHours())}:${pad(base.getMinutes())}:00`;
+    const offsetMinutes = -base.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const absOffset = Math.abs(offsetMinutes);
+    const offsetHours = pad(Math.floor(absOffset / 60));
+    const offsetMins = pad(absOffset % 60);
+
+    return `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}T${pad(base.getHours())}:${pad(base.getMinutes())}:00${sign}${offsetHours}:${offsetMins}`;
   }
 }
