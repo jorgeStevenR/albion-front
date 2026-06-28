@@ -138,3 +138,13 @@
 .build-panel ::ng-deep .equipment-panel {
   max-width: 100%;
 }
+
+.empty-roles {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}

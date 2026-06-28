@@ -18,15 +18,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatExpansionModule } from '@angular/material/expansion';
 
-/** Plantilla estándar del gremio — 11 puestos como en Discord */
+/** Plantilla estándar del gremio — 10 puestos (3 Falce, 3 Dagas, 1 Healer, 1 Martillo, 1 Offtank, 1 SC) */
 export const GUILD_AVA_SLOTS: Omit<PingTemplateRoleSlot, 'buildSlots'>[] = [
   { slotKey: 'MARTILLO', displayName: 'Martillo', maxPlayers: 1, sortOrder: 1 },
   { slotKey: 'OFFTANK', displayName: 'Offtank', maxPlayers: 1, sortOrder: 2 },
-  { slotKey: 'IRONROOT', displayName: 'Ironroot', maxPlayers: 1, sortOrder: 3 },
+  { slotKey: 'HEALER', displayName: 'Healer', maxPlayers: 1, sortOrder: 3 },
   { slotKey: 'SC', displayName: 'SC', maxPlayers: 1, sortOrder: 4 },
   { slotKey: 'FALCE', displayName: 'Falce', maxPlayers: 3, sortOrder: 5 },
   { slotKey: 'DAGAS', displayName: 'Dagas', maxPlayers: 3, sortOrder: 6 },
-  { slotKey: 'SCAUT', displayName: 'Scout', maxPlayers: 1, sortOrder: 7 },
 ];
 
 interface PartySlotEditor extends PingTemplateRoleSlot {
