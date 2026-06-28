@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
+import { catchError, finalize, map } from 'rxjs/operators';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -17,6 +17,11 @@ import { finishLoading } from '../../../shared/utils/loading.util';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+
+interface OpenAvalonCard extends AvalonRun {
+  isRegistered: boolean;
+  registeredRole?: string;
+}
 
 @Component({
   selector: 'app-player-dashboard',
@@ -49,7 +54,7 @@ export class PlayerDashboardComponent implements OnInit {
   totalEarned = 0;
   weeklyEarnings = 0;
   avalonParticipations = 0;
-  openAvalons: AvalonRun[] = [];
+  openAvalons: OpenAvalonCard[] = [];
   recentDistributions: Distribution[] = [];
 
   ngOnInit(): void {
@@ -89,10 +94,39 @@ export class PlayerDashboardComponent implements OnInit {
         this.recentDistributions = [...distributions]
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 5);
-        this.openAvalons = avalons
-          .filter((a) => a.status === 'OPEN' && a.registrationsOpen !== false)
-          .sort((a, b) => this.avalonTime(a) - this.avalonTime(b));
+        this.loadOpenAvalons(avalons, user.playerId);
       },
+    });
+  }
+
+  private loadOpenAvalons(avalons: AvalonRun[], playerId: number): void {
+    const open = avalons
+      .filter((a) => a.status === 'OPEN' && a.registrationsOpen !== false)
+      .sort((a, b) => this.avalonTime(a) - this.avalonTime(b));
+
+    if (!open.length) {
+      this.openAvalons = [];
+      return;
+    }
+
+    forkJoin(
+      open.map((ava) =>
+        this.avalonService.getRoles(ava.id).pipe(
+          catchError(() => of(null)),
+          map((roles) => {
+            const mySlot = roles?.roles.find((r) => r.currentPlayerRegistrationId != null);
+            const mySummary = roles?.registeredPlayers?.find((p) => p.playerId === playerId);
+            return {
+              ...ava,
+              isRegistered: !!mySlot || !!mySummary,
+              registeredRole: mySlot?.displayName ?? mySummary?.slotDisplayName,
+            } satisfies OpenAvalonCard;
+          }),
+        ),
+      ),
+    ).subscribe((cards) => {
+      this.openAvalons = cards;
+      this.cdr.markForCheck();
     });
   }
 

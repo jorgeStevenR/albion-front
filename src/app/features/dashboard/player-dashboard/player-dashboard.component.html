@@ -67,10 +67,20 @@
                   <p class="ava-desc">{{ ava.description }}</p>
                 }
               </div>
-              <a mat-flat-button color="primary" [routerLink]="['/avalons', ava.id]">
-                <mat-icon>how_to_reg</mat-icon>
-                Inscribirme
-              </a>
+              @if (ava.isRegistered) {
+                <a mat-stroked-button class="registered-btn" [routerLink]="['/avalons', ava.id]">
+                  <mat-icon>check_circle</mat-icon>
+                  Inscrito
+                  @if (ava.registeredRole) {
+                    <span class="role-tag">· {{ ava.registeredRole }}</span>
+                  }
+                </a>
+              } @else {
+                <a mat-flat-button color="primary" [routerLink]="['/avalons', ava.id]">
+                  <mat-icon>how_to_reg</mat-icon>
+                  Inscribirme
+                </a>
+              }
             </li>
           }
         </ul>
