@@ -192,7 +192,7 @@ export class AvalonDetailComponent implements OnInit {
     if (!this.avalon?.lootItems) return 0;
     return this.avalon.lootItems.reduce((sum, item) => {
       const total = item.marketValue * item.quantity;
-      return sum + (item.type === 'ITEM' ? total * 0.8 : total);
+      return sum + total * 0.8;
     }, 0);
   }
 
