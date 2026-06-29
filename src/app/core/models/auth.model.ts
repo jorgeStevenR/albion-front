@@ -10,6 +10,7 @@ export interface AuthResponse {
   playerId: number;
   albionName: string;
   role: PlayerRole;
+  mustChangePassword: boolean;
 }
 
 export interface AuthUser {
@@ -17,4 +18,19 @@ export interface AuthUser {
   playerId: number;
   albionName: string;
   role: PlayerRole;
+  mustChangePassword: boolean;
+}
+
+export interface UserProfile {
+  playerId: number;
+  albionName: string;
+  discordName: string;
+  rank?: string;
+  role: PlayerRole;
+  mustChangePassword: boolean;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }

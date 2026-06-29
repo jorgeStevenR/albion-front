@@ -162,6 +162,10 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
     return !!user && user.playerId === this.avalon?.createdByPlayerId;
   }
 
+  isChestType(type: LootItem['type']): boolean {
+    return type === 'CHEST' || type === 'ITEM';
+  }
+
   getAvalonSubtitle(): string {
     if (!this.avalon) return '';
     const statusLabels: Record<string, string> = {
@@ -263,7 +267,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   }
 
   getChestLootItems(): LootItem[] {
-    return this.avalon?.lootItems?.filter((i) => i.type === 'ITEM') ?? [];
+    return this.avalon?.lootItems?.filter((i) => this.isChestType(i.type)) ?? [];
   }
 
   getBagLootItems(): LootItem[] {
@@ -271,7 +275,9 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   }
 
   getLootTypeLabel(item: LootItem): string {
-    return item.type === 'BAG' ? 'Bolsita piso' : 'Cofre';
+    if (item.type === 'BAG') return 'Bolsita piso';
+    if (this.isChestType(item.type)) return 'Cofre';
+    return item.type;
   }
 
   getBagGrossValue(): number {
@@ -284,7 +290,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   getChestGrossValue(): number {
     if (!this.avalon?.lootItems) return 0;
     return this.avalon.lootItems
-      .filter((i) => i.type === 'ITEM')
+      .filter((i) => this.isChestType(i.type))
       .reduce((sum, item) => sum + item.marketValue * item.quantity, 0);
   }
 
@@ -306,7 +312,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
 
   getLootLineValue(item: LootItem): number {
     const gross = item.marketValue * item.quantity;
-    return item.type === 'ITEM' ? gross * 0.8 : gross;
+    return this.isChestType(item.type) ? gross * 0.8 : gross;
   }
 
   getRawLootValue(): number {
@@ -322,7 +328,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   canSell(item: LootItem): boolean {
     return this.canEdit
       && (this.avalon?.status === 'FINISHED' || this.avalon?.status === 'CLOSED')
-      && item.type === 'ITEM'
+      && this.isChestType(item.type)
       && item.saleStatus === 'UNSOLD';
   }
 

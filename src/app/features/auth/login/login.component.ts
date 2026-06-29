@@ -66,7 +66,12 @@ export class LoginComponent implements OnInit {
         });
       }),
     ).subscribe({
-      next: () => {
+      next: (response) => {
+        if (response.mustChangePassword) {
+          this.notification.info('Debes cambiar tu contraseña antes de continuar');
+          this.router.navigate(['/profile'], { queryParams: { required: '1' } });
+          return;
+        }
         this.notification.success('Bienvenido al Treasury del gremio');
         this.router.navigate(['/dashboard']);
       },

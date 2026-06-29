@@ -1,0 +1,84 @@
+<app-page-header
+  title="Mi perfil"
+  [subtitle]="requiredChange ? 'Debes cambiar tu contraseña para continuar' : 'Tu cuenta en el Treasury del gremio'"
+></app-page-header>
+
+@if (loading) {
+  <app-loading-spinner message="Cargando perfil..." />
+} @else {
+  @if (requiredChange) {
+    <mat-card class="notice-card">
+      <mat-icon>lock_reset</mat-icon>
+      <div>
+        <strong>Primer acceso</strong>
+        <p>Por seguridad, cambia la contraseña temporal antes de usar el resto de la aplicación.</p>
+      </div>
+    </mat-card>
+  }
+
+  <mat-tab-group animationDuration="200ms" [(selectedIndex)]="selectedTab">
+    <mat-tab label="Datos" [disabled]="requiredChange">
+      <div class="tab-content">
+        @if (profile) {
+          <mat-card class="info-card">
+            <div class="info-row">
+              <span class="label">Nombre Albion</span>
+              <strong>{{ profile.albionName }}</strong>
+            </div>
+            <div class="info-row">
+              <span class="label">Discord</span>
+              <strong>{{ profile.discordName || '—' }}</strong>
+            </div>
+            <div class="info-row">
+              <span class="label">Rango en Albion</span>
+              <strong>{{ profile.rank || '—' }}</strong>
+            </div>
+            <div class="info-row">
+              <span class="label">Rol en Treasury</span>
+              <strong>{{ getRoleLabel(profile.role) }}</strong>
+            </div>
+          </mat-card>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Contraseña">
+      <div class="tab-content">
+        <mat-card class="form-card">
+          <h3>Cambiar contraseña</h3>
+          <p class="hint">Mínimo 8 caracteres. Usa una contraseña que solo tú conozcas.</p>
+
+          <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Contraseña actual</mat-label>
+              <input matInput [type]="hideCurrent ? 'password' : 'text'" formControlName="currentPassword" />
+              <button mat-icon-button matSuffix type="button" (click)="hideCurrent = !hideCurrent">
+                <mat-icon>{{ hideCurrent ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nueva contraseña</mat-label>
+              <input matInput [type]="hideNew ? 'password' : 'text'" formControlName="newPassword" />
+              <button mat-icon-button matSuffix type="button" (click)="hideNew = !hideNew">
+                <mat-icon>{{ hideNew ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirmar nueva contraseña</mat-label>
+              <input matInput [type]="hideConfirm ? 'password' : 'text'" formControlName="confirmPassword" />
+              <button mat-icon-button matSuffix type="button" (click)="hideConfirm = !hideConfirm">
+                <mat-icon>{{ hideConfirm ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving || passwordForm.invalid">
+              {{ requiredChange ? 'Guardar y continuar' : 'Actualizar contraseña' }}
+            </button>
+          </form>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+}

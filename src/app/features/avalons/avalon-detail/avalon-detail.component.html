@@ -53,6 +53,10 @@
         <span class="label">Descuento gremio cofres (20%)</span>
         <strong class="discount">-{{ (getChestGrossValue() - getChestNetValue()) | currencySilver }}</strong>
       </mat-card>
+      <mat-card class="summary-card">
+        <span class="label">Cofres neto (80%)</span>
+        <strong>{{ getChestNetValue() | currencySilver }}</strong>
+      </mat-card>
     }
     <mat-card class="summary-card highlight">
       <span class="label">Balance final a repartir</span>
@@ -142,14 +146,24 @@
 
         <mat-card class="loot-entry-card">
           <h4><mat-icon>inventory_2</mat-icon> Cofres</h4>
-          <p class="loot-hint">Agrega un cofre cada vez que llenen uno — valor bruto de mercado.</p>
+          <p class="loot-hint">
+            Cada cofre es un valor total bruto de mercado — no son objetos sueltos.
+            Se suman todos los cofres y al repartir se quita 20% gremio (100M → 80M netos).
+          </p>
           <form class="loot-form" [formGroup]="chestForm" (ngSubmit)="addChest()">
             <mat-form-field appearance="outline">
-              <mat-label>Valor bruto del cofre</mat-label>
+              <mat-label>Valor total bruto del cofre</mat-label>
               <input matInput type="number" formControlName="grossValue" min="1" />
             </mat-form-field>
             <button mat-stroked-button type="submit" [disabled]="chestForm.invalid">+ Agregar cofre</button>
           </form>
+          @if (getChestLootItems().length > 0) {
+            <div class="chest-totals">
+              <span><strong>{{ getChestLootItems().length }}</strong> cofre(s) registrado(s)</span>
+              <span>Bruto total: <strong>{{ getChestGrossValue() | currencySilver }}</strong></span>
+              <span>Neto a repartir (80%): <strong class="net">{{ getChestNetValue() | currencySilver }}</strong></span>
+            </div>
+          }
         </mat-card>
 
         <form class="maps-form" [formGroup]="mapsForm" (ngSubmit)="saveMaps()">
@@ -191,7 +205,7 @@
           <th mat-header-cell *matHeaderCellDef>Valor efectivo</th>
           <td mat-cell *matCellDef="let row">
             {{ getLootLineValue(row) | currencySilver }}
-            @if (row.type === 'ITEM') {
+            @if (isChestType(row.type)) {
               <span class="value-note">neto (80%)</span>
             } @else if (row.type === 'BAG' && getMapsCost() > 0) {
               <span class="value-note">bruto</span>

@@ -2,7 +2,7 @@ import { RoleBuildTemplate, RoleBuildSlot, SwapItem } from './build-template.mod
 
 export type AvalonStatus = 'OPEN' | 'FINISHED' | 'CLOSED';
 export type ParticipantType = 'PLAYER' | 'SCOUT' | 'GUILD';
-export type LootType = 'BAG' | 'ITEM';
+export type LootType = 'BAG' | 'CHEST' | 'ITEM';
 export type RoleType = 'CALLER' | 'TANK' | 'HEALER' | 'DPS' | 'SUPPORT' | 'SCOUT';
 
 export interface AvalonRun {

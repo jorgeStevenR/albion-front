@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { mustChangePasswordGuard } from './core/guards/must-change-password.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
 
@@ -18,8 +19,13 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, mustChangePasswordGuard],
     children: [
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+      },
       {
         path: 'dashboard',
         loadComponent: () =>

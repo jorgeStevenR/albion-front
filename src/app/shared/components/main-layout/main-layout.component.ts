@@ -45,6 +45,7 @@ export class MainLayoutComponent {
   private readonly breakpointObserver = inject(BreakpointObserver);
 
   readonly user = this.auth.getCurrentUser();
+  readonly passwordChangeRequired = this.auth.mustChangePassword();
   readonly isHandset$ = this.breakpointObserver
     .observe(Breakpoints.Handset)
     .pipe(map((r) => r.matches), shareReplay());
@@ -67,6 +68,9 @@ export class MainLayoutComponent {
   ];
 
   visibleNavItems(): NavItem[] {
+    if (this.passwordChangeRequired) {
+      return [{ label: 'Mi perfil', icon: 'person', route: '/profile', exact: true }];
+    }
     const role = this.user?.role;
     return this.navItems.filter((item) => !item.roles || (role && item.roles.includes(role)));
   }

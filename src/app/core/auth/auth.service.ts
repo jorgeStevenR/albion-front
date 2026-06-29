@@ -1,6 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { AuthResponse, AuthUser, LoginRequest, PlayerRole } from '../models/auth.model';
+import {
+  AuthResponse,
+  AuthUser,
+  ChangePasswordRequest,
+  LoginRequest,
+  PlayerRole,
+  UserProfile,
+} from '../models/auth.model';
 import { ApiService } from '../services/api.service';
 
 const AUTH_KEY = 'albion_guild_auth';
@@ -13,16 +20,17 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.api.post<AuthResponse>('/auth/login', credentials).pipe(
-      tap((response) => {
-        const user: AuthUser = {
-          token: response.token,
-          playerId: response.playerId,
-          albionName: response.albionName,
-          role: response.role,
-        };
-        localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-        this.currentUserSubject.next(user);
-      }),
+      tap((response) => this.persistUser(response)),
+    );
+  }
+
+  getProfile(): Observable<UserProfile> {
+    return this.api.get<UserProfile>('/auth/me');
+  }
+
+  changePassword(request: ChangePasswordRequest): Observable<AuthResponse> {
+    return this.api.post<AuthResponse>('/auth/change-password', request).pipe(
+      tap((response) => this.persistUser(response)),
     );
   }
 
@@ -41,6 +49,10 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  mustChangePassword(): boolean {
+    return !!this.getCurrentUser()?.mustChangePassword;
   }
 
   hasRole(...roles: PlayerRole[]): boolean {
@@ -69,11 +81,33 @@ export class AuthService {
     return this.hasRole('ADMIN', 'OFFICER');
   }
 
+  private persistUser(response: AuthResponse): void {
+    const user: AuthUser = {
+      token: response.token,
+      playerId: response.playerId,
+      albionName: response.albionName,
+      role: response.role,
+      mustChangePassword: response.mustChangePassword,
+    };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
   private loadUser(): AuthUser | null {
     const raw = localStorage.getItem(AUTH_KEY);
     if (!raw) return null;
     try {
-      return JSON.parse(raw) as AuthUser;
+      const parsed = JSON.parse(raw) as Partial<AuthUser>;
+      if (!parsed.token || !parsed.playerId || !parsed.albionName || !parsed.role) {
+        return null;
+      }
+      return {
+        token: parsed.token,
+        playerId: parsed.playerId,
+        albionName: parsed.albionName,
+        role: parsed.role,
+        mustChangePassword: parsed.mustChangePassword ?? false,
+      };
     } catch {
       return null;
     }
