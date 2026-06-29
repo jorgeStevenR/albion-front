@@ -81,6 +81,21 @@ export class AuthService {
     return this.hasRole('ADMIN', 'OFFICER');
   }
 
+  refreshProfileFlags(): Observable<UserProfile> {
+    return this.getProfile().pipe(
+      tap((profile) => {
+        const user = this.getCurrentUser();
+        if (!user) return;
+        const updated: AuthUser = {
+          ...user,
+          mustChangePassword: profile.mustChangePassword,
+        };
+        localStorage.setItem(AUTH_KEY, JSON.stringify(updated));
+        this.currentUserSubject.next(updated);
+      }),
+    );
+  }
+
   private persistUser(response: AuthResponse): void {
     const user: AuthUser = {
       token: response.token,

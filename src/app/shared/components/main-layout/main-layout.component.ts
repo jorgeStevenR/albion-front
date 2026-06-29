@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -39,13 +39,12 @@ interface NavItem {
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
 })
-export class MainLayoutComponent {
+export class MainLayoutComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  readonly user = this.auth.getCurrentUser();
-  readonly passwordChangeRequired = this.auth.mustChangePassword();
   readonly isHandset$ = this.breakpointObserver
     .observe(Breakpoints.Handset)
     .pipe(map((r) => r.matches), shareReplay());
@@ -65,12 +64,20 @@ export class MainLayoutComponent {
     { label: 'Usuarios', icon: 'group', route: '/players', roles: ['ADMIN'], exact: true },
     { label: 'Admin Panel', icon: 'admin_panel_settings', route: '/admin', roles: ['ADMIN'], exact: true },
     { label: 'Plantillas Ava', icon: 'event_note', route: '/admin/ping-templates', roles: ['ADMIN'], exact: true },
+    { label: 'Mi perfil', icon: 'person', route: '/profile', exact: true },
   ];
 
+  ngOnInit(): void {
+    this.auth.refreshProfileFlags().subscribe({
+      next: () => this.cdr.markForCheck(),
+    });
+  }
+
+  get user() {
+    return this.auth.getCurrentUser();
+  }
+
   visibleNavItems(): NavItem[] {
-    if (this.passwordChangeRequired) {
-      return [{ label: 'Mi perfil', icon: 'person', route: '/profile', exact: true }];
-    }
     const role = this.user?.role;
     return this.navItems.filter((item) => !item.roles || (role && item.roles.includes(role)));
   }

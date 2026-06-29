@@ -55,18 +55,16 @@
           <mat-icon>person</mat-icon>
           Mi perfil
         </button>
-        @if (!passwordChangeRequired) {
-          @if (canViewGuildBalance()) {
-            <button mat-menu-item routerLink="/guild/balance">
-              <mat-icon>account_balance</mat-icon>
-              Balance Gremial
-            </button>
-          } @else {
-            <button mat-menu-item routerLink="/wallet">
-              <mat-icon>account_balance_wallet</mat-icon>
-              Mi Balance
-            </button>
-          }
+        @if (canViewGuildBalance()) {
+          <button mat-menu-item routerLink="/guild/balance">
+            <mat-icon>account_balance</mat-icon>
+            Balance Gremial
+          </button>
+        } @else {
+          <button mat-menu-item routerLink="/wallet">
+            <mat-icon>account_balance_wallet</mat-icon>
+            Mi Balance
+          </button>
         }
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">
