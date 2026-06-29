@@ -70,6 +70,7 @@ export class MainLayoutComponent implements OnInit {
   ngOnInit(): void {
     this.auth.refreshProfileFlags().subscribe({
       next: () => this.cdr.markForCheck(),
+      error: () => this.cdr.markForCheck(),
     });
   }
 

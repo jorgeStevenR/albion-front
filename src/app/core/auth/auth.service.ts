@@ -82,6 +82,10 @@ export class AuthService {
   }
 
   refreshProfileFlags(): Observable<UserProfile> {
+    const user = this.getCurrentUser();
+    if (!user) {
+      throw new Error('Not authenticated');
+    }
     return this.getProfile().pipe(
       tap((profile) => {
         const user = this.getCurrentUser();
