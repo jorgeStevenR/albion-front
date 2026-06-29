@@ -261,4 +261,10 @@
       </div>
     </mat-tab>
   </mat-tab-group>
+} @else {
+  <div class="load-error">
+    <mat-icon>error_outline</mat-icon>
+    <p>No se pudo cargar la avaloniana. Recarga la página o vuelve al listado.</p>
+    <a mat-stroked-button routerLink="/avalons">Volver a avalonianas</a>
+  </div>
 }

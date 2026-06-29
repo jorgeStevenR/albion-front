@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
@@ -12,6 +12,7 @@ import { SaleService } from '../../../core/services/sale.service';
 import { AvalonRun, LootItem, ParticipantType } from '../../../core/models/avalon.model';
 import { Player } from '../../../core/models/player.model';
 import { CurrencySilverPipe } from '../../../shared/pipes/currency-silver.pipe';
+import { formatCurrencySilver } from '../../../shared/utils/currency-silver.util';
 import { finishLoading } from '../../../shared/utils/loading.util';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,6 +32,7 @@ import { AvalonCountdown, getAvalonCountdown } from '../../../shared/utils/avalo
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     PageHeaderComponent,
     LoadingSpinnerComponent,
     CurrencySilverPipe,
@@ -59,9 +61,9 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   readonly canEdit = inject(AuthService).isOfficerOrAdmin();
   private readonly auth = inject(AuthService);
-  private readonly currencySilver = inject(CurrencySilverPipe);
 
   loading = true;
+  loadError = false;
   calculating = false;
   closing = false;
   selling = false;
@@ -120,6 +122,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
 
   loadAvalon(id: number): void {
     this.loading = true;
+    this.loadError = false;
     this.avalonService.getById(id).pipe(
       finalize(() => finishLoading(this.cdr, () => (this.loading = false))),
     ).subscribe({
@@ -132,6 +135,10 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
         const bagItem = data.lootItems?.find((i) => i.type === 'BAG');
         this.bagForm.reset({ grossValue: bagItem?.marketValue ?? 0 });
         this.startCountdown();
+      },
+      error: () => {
+        this.loadError = true;
+        this.avalon = null;
       },
     });
   }
@@ -243,13 +250,13 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
     this.avalonService.calculate(this.avalon.id).subscribe({
       next: (result) => {
         const mapsPart = (result.mapsDeducted ?? 0) > 0
-          ? ` (bolsas ${this.currencySilver.transform(result.bagNet ?? 0)} netas, mapas -${this.currencySilver.transform(result.mapsDeducted ?? 0)})`
-          : ` (bolsas ${this.currencySilver.transform(result.bagNet ?? 0)} netas)`;
+          ? ` (bolsas ${formatCurrencySilver(result.bagNet ?? 0)} netas, mapas -${formatCurrencySilver(result.mapsDeducted ?? 0)})`
+          : ` (bolsas ${formatCurrencySilver(result.bagNet ?? 0)} netas)`;
         const chestPart = (result.chestNet ?? 0) > 0
-          ? ` + cofres ${this.currencySilver.transform(result.chestNet ?? 0)} netos`
+          ? ` + cofres ${formatCurrencySilver(result.chestNet ?? 0)} netos`
           : '';
         this.notification.success(
-          `Avalon terminada. Reparto: ${this.currencySilver.transform(result.totalBalance)}${mapsPart}${chestPart}. Vende el loot para cerrar.`,
+          `Avalon terminada. Reparto: ${formatCurrencySilver(result.totalBalance)}${mapsPart}${chestPart}. Vende el loot para cerrar.`,
         );
         this.loadAvalon(this.avalon!.id);
         this.calculating = false;
