@@ -22,7 +22,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           auth.logout();
           router.navigate(['/auth/login']);
         } else if (error.status === 403) {
-          message = 'No tienes permisos para esta acción';
+          const serverMsg = error.error?.message as string | undefined;
+          if (serverMsg?.includes('cambiar tu contraseña')) {
+            message = serverMsg;
+            if (!router.url.startsWith('/profile')) {
+              router.navigate(['/profile'], { queryParams: { required: '1' } });
+            }
+          } else {
+            message = serverMsg ?? 'No tienes permisos para esta acción';
+          }
         } else if (error.status === 404) {
           message = 'Recurso no encontrado';
         } else if (error.error?.message === 'ROLE_FULL') {
