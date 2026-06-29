@@ -59,6 +59,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   readonly canEdit = inject(AuthService).isOfficerOrAdmin();
   private readonly auth = inject(AuthService);
+  private readonly currencySilver = inject(CurrencySilverPipe);
 
   loading = true;
   calculating = false;
@@ -216,7 +217,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
       next: (updated) => {
         this.avalon = updated;
         this.chestForm.reset({ grossValue: 0 });
-        this.notification.success('Cofre agregado — 20% gremio al repartir');
+        this.notification.success('Cofre agregado — tax gremio 20% al repartir');
       },
     });
   }
@@ -241,7 +242,15 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
     this.calculating = true;
     this.avalonService.calculate(this.avalon.id).subscribe({
       next: (result) => {
-        this.notification.success(`Avalon terminada. Reparto: ${result.totalBalance} silver. Vende el loot para cerrar.`);
+        const mapsPart = (result.mapsDeducted ?? 0) > 0
+          ? ` (bolsas ${this.currencySilver.transform(result.bagNet ?? 0)} netas, mapas -${this.currencySilver.transform(result.mapsDeducted ?? 0)})`
+          : ` (bolsas ${this.currencySilver.transform(result.bagNet ?? 0)} netas)`;
+        const chestPart = (result.chestNet ?? 0) > 0
+          ? ` + cofres ${this.currencySilver.transform(result.chestNet ?? 0)} netos`
+          : '';
+        this.notification.success(
+          `Avalon terminada. Reparto: ${this.currencySilver.transform(result.totalBalance)}${mapsPart}${chestPart}. Vende el loot para cerrar.`,
+        );
         this.loadAvalon(this.avalon!.id);
         this.calculating = false;
       },
@@ -312,7 +321,13 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
 
   getLootLineValue(item: LootItem): number {
     const gross = item.marketValue * item.quantity;
-    return this.isChestType(item.type) ? gross * 0.8 : gross;
+    if (this.isChestType(item.type)) {
+      return gross * 0.8;
+    }
+    if (item.type === 'BAG') {
+      return Math.max(0, gross - this.getMapsCost());
+    }
+    return gross;
   }
 
   getRawLootValue(): number {

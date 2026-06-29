@@ -72,6 +72,9 @@ export interface AvalonMapsRequest {
 export interface DistributionCalculation {
   avalonId: number;
   totalBalance: number;
+  bagNet?: number;
+  chestNet?: number;
+  mapsDeducted?: number;
   totalWeight: number;
   distributions: Distribution[];
 }
