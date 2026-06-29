@@ -34,10 +34,12 @@
       <span class="label">Bolsitas piso (bruto)</span>
       <strong>{{ getBagGrossValue() | currencySilver }}</strong>
     </mat-card>
-    @if (getMapsCost() > 0) {
+    @if (getMapsTotalDeduction() > 0) {
       <mat-card class="summary-card">
-        <span class="label">Mapas ({{ avalon.mapsThrown ?? 0 }}) — resta de bolsitas</span>
-        <strong class="discount">-{{ getMapsCost() | currencySilver }}</strong>
+        <span class="label">
+          Mapas ({{ avalon.mapsThrown ?? 0 }} × {{ getMapsCostPerMap() | currencySilver }}) — resta de bolsitas
+        </span>
+        <strong class="discount">-{{ getMapsTotalDeduction() | currencySilver }}</strong>
       </mat-card>
       <mat-card class="summary-card">
         <span class="label">Bolsas netas</span>
@@ -169,16 +171,22 @@
         <form class="maps-form" [formGroup]="mapsForm" (ngSubmit)="saveMaps()">
           <p class="maps-hint">
             <mat-icon>map</mat-icon>
-            Mapas lanzados — se descuentan de las bolsitas del piso antes del reparto.
+            Mapas lanzados — se descuentan de las bolsitas del piso (cantidad × costo por mapa).
           </p>
           <mat-form-field appearance="outline">
             <mat-label>Cantidad de mapas</mat-label>
             <input matInput type="number" formControlName="mapsThrown" min="0" />
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>Costo total mapas</mat-label>
+            <mat-label>Costo por mapa</mat-label>
             <input matInput type="number" formControlName="mapsCost" min="0" />
           </mat-form-field>
+          @if (mapsForm.controls.mapsThrown.value > 0 && mapsForm.controls.mapsCost.value > 0) {
+            <p class="maps-total-hint">
+              Total a descontar de bolsitas:
+              <strong>{{ mapsForm.controls.mapsThrown.value * mapsForm.controls.mapsCost.value | currencySilver }}</strong>
+            </p>
+          }
           <button mat-stroked-button type="submit" [disabled]="savingMaps || mapsForm.invalid">
             Guardar mapas
           </button>
@@ -207,7 +215,7 @@
             {{ getLootLineValue(row) | currencySilver }}
             @if (isChestType(row.type)) {
               <span class="value-note">neto (80% tax)</span>
-            } @else if (row.type === 'BAG' && getMapsCost() > 0) {
+            } @else if (row.type === 'BAG' && getMapsTotalDeduction() > 0) {
               <span class="value-note">neto (mapas)</span>
             }
           </td>

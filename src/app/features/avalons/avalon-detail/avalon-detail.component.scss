@@ -185,6 +185,17 @@
   }
 }
 
+.maps-total-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+
+  strong {
+    color: var(--gold);
+  }
+}
+
 .value-note {
   display: block;
   font-size: 0.7rem;

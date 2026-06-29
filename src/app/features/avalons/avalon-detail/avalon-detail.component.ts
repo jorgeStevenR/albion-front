@@ -310,12 +310,19 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
       .reduce((sum, item) => sum + item.marketValue * item.quantity, 0);
   }
 
-  getMapsCost(): number {
+  getMapsCostPerMap(): number {
     return this.avalon?.mapsCost ?? 0;
   }
 
+  getMapsTotalDeduction(): number {
+    const count = this.avalon?.mapsThrown ?? 0;
+    const perMap = this.getMapsCostPerMap();
+    if (count <= 0 || perMap <= 0) return 0;
+    return count * perMap;
+  }
+
   getBagNetValue(): number {
-    return Math.max(0, this.getBagGrossValue() - this.getMapsCost());
+    return Math.max(0, this.getBagGrossValue() - this.getMapsTotalDeduction());
   }
 
   getChestNetValue(): number {
@@ -332,7 +339,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
       return gross * 0.8;
     }
     if (item.type === 'BAG') {
-      return Math.max(0, gross - this.getMapsCost());
+      return Math.max(0, gross - this.getMapsTotalDeduction());
     }
     return gross;
   }
