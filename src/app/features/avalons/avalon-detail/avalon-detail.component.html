@@ -140,7 +140,7 @@
               <mat-label>Valor bruto bolsitas del piso</mat-label>
               <input matInput type="number" formControlName="grossValue" min="0" />
             </mat-form-field>
-            <button mat-flat-button color="primary" type="submit" [disabled]="bagForm.invalid">
+            <button mat-flat-button color="primary" type="submit" [disabled]="bagForm.invalid || savingBags">
               Guardar bolsitas
             </button>
           </form>

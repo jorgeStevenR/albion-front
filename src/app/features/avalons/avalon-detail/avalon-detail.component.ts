@@ -68,6 +68,7 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   closing = false;
   selling = false;
   savingMaps = false;
+  savingBags = false;
   sellingLootId: number | null = null;
   avalon: AvalonRun | null = null;
   countdown: AvalonCountdown | null = null;
@@ -208,11 +209,16 @@ export class AvalonDetailComponent implements OnInit, OnDestroy {
   }
 
   saveBags(): void {
-    if (!this.avalon || this.bagForm.invalid) return;
+    if (!this.avalon || this.bagForm.invalid || this.savingBags) return;
+    this.savingBags = true;
     this.avalonService.setBagGross(this.avalon.id, this.bagForm.controls.grossValue.value).subscribe({
       next: (updated) => {
         this.avalon = updated;
+        this.savingBags = false;
         this.notification.success('Bolsitas del piso guardadas');
+      },
+      error: () => {
+        this.savingBags = false;
       },
     });
   }
